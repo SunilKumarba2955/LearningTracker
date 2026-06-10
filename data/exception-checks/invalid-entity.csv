@@ -1,3 +1,2 @@
 ﻿# Expected: Invalid configuration entity: trainer
-START_TX,,,
 POST,trainer,4901,Grace,Hopper,grace.hopper@example.com,Java,true

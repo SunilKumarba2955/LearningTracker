@@ -5,11 +5,8 @@ import com.airtribe.learntrack.entity.Enrollment;
 import com.airtribe.learntrack.entity.Student;
 import com.airtribe.learntrack.exception.EntityNotFoundException;
 import com.airtribe.learntrack.exception.InvalidInputException;
-import com.airtribe.learntrack.exception.TransactionException;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
@@ -22,7 +19,6 @@ public class EnrollmentService {
     private static final String STATUS_CANCELLED = "CANCELLED";
 
     private final List<Enrollment> enrollments = new ArrayList<>();
-    private final Deque<List<Enrollment>> transactionSnapshots = new ArrayDeque<>();
     private final StudentService studentService;
     private final CourseService courseService;
 
@@ -140,47 +136,6 @@ public class EnrollmentService {
         enrollments.remove(index);
     }
 
-    /**
-     * Starts a transaction snapshot.
-     */
-    public void begin() {
-        transactionSnapshots.push(copyEnrollments(enrollments));
-    }
-
-    /**
-     * Commits the current transaction snapshot.
-     *
-     * @throws TransactionException if no transaction is active
-     */
-    public void commit() {
-        if (transactionSnapshots.isEmpty()) {
-            throw new TransactionException("Database Failure: No active transaction to commit.");
-        }
-        transactionSnapshots.pop();
-    }
-
-    /**
-     * Rolls back to the previous transaction snapshot.
-     *
-     * @throws TransactionException if no transaction is active
-     */
-    public void rollback() {
-        if (transactionSnapshots.isEmpty()) {
-            throw new TransactionException("Database Failure: No active transaction to roll back.");
-        }
-        enrollments.clear();
-        enrollments.addAll(transactionSnapshots.pop());
-    }
-
-    /**
-     * Indicates whether a transaction is active.
-     *
-     * @return {@code true} when a transaction snapshot exists
-     */
-    public boolean isTxActive() {
-        return !transactionSnapshots.isEmpty();
-    }
-
     private Enrollment findEnrollmentInternal(int enrollmentId) {
         int index = findEnrollmentIndexById(enrollmentId);
         if (index < 0) {
@@ -242,14 +197,6 @@ public class EnrollmentService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
-    }
-
-    private List<Enrollment> copyEnrollments(List<Enrollment> source) {
-        List<Enrollment> copiedEnrollments = new ArrayList<>();
-        for (Enrollment enrollment : source) {
-            copiedEnrollments.add(copyEnrollment(enrollment));
-        }
-        return copiedEnrollments;
     }
 
     private Enrollment copyEnrollment(Enrollment enrollment) {

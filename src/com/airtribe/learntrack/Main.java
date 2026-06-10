@@ -4,6 +4,7 @@ import com.airtribe.learntrack.entity.Course;
 import com.airtribe.learntrack.entity.Enrollment;
 import com.airtribe.learntrack.entity.Student;
 import com.airtribe.learntrack.exception.InvalidInputException;
+import com.airtribe.learntrack.exception.LearnTrackException;
 import com.airtribe.learntrack.service.CourseService;
 import com.airtribe.learntrack.service.EnrollmentService;
 import com.airtribe.learntrack.service.StudentService;
@@ -23,9 +24,15 @@ import java.util.Scanner;
  * Main CLI orchestrator for LearnTrack.
  */
 public class Main {
+    private static final String DEFAULT_SEED_PATH = "data/seed.csv";
+    private static final String STATUS_ACTIVE = "ACTIVE";
+    private static final String STATUS_COMPLETED = "COMPLETED";
+    private static final String STATUS_CANCELLED = "CANCELLED";
+
     private static final StudentService studentService = new StudentService();
     private static final CourseService courseService = new CourseService();
     private static final EnrollmentService enrollmentService = new EnrollmentService(studentService, courseService);
+    private static boolean defaultSeedLoaded;
 
     /**
      * Starts the LearnTrack command-line application.
@@ -34,10 +41,12 @@ public class Main {
      */
     public static void main(String[] args) {
         printBootstrapBanner();
-        autoLoadDefaultSeed();
 
         for (String scriptPath : args) {
-            executeCSVBulkLoad(scriptPath);
+            boolean loaded = executeCSVBulkLoad(scriptPath);
+            if (loaded && DEFAULT_SEED_PATH.equals(scriptPath.replace('\\', '/'))) {
+                defaultSeedLoaded = true;
+            }
         }
 
         runInteractiveLoop(new Scanner(System.in));
@@ -49,11 +58,15 @@ public class Main {
         System.out.println("====================================================");
     }
 
-    private static void autoLoadDefaultSeed() {
-        String defaultSeedPath = "data/seed.csv";
-        File seedFile = new File(defaultSeedPath);
+    private static void ingestDefaultSeed() {
+        if (defaultSeedLoaded) {
+            System.out.println("Default seed data is already loaded in memory.");
+            return;
+        }
+
+        File seedFile = new File(DEFAULT_SEED_PATH);
         if (seedFile.exists()) {
-            executeCSVBulkLoad(defaultSeedPath);
+            defaultSeedLoaded = executeCSVBulkLoad(DEFAULT_SEED_PATH);
         } else {
             System.out.println("Default seed script not found at data/seed.csv.");
         }
@@ -78,7 +91,7 @@ public class Main {
                 } else {
                     processInput(input, scanner);
                 }
-            } catch (Exception exception) {
+            } catch (LearnTrackException | IllegalArgumentException exception) {
                 System.out.println();
                 System.out.println("ERROR: " + exception.getMessage());
             }
@@ -88,17 +101,14 @@ public class Main {
     private static void printMainMenu() {
         System.out.println();
         System.out.println("--- LEARNTRACK CENTRAL CONFIGURATION PANEL ---");
-        System.out.println("1. Student Operations (Create / View Ledger / Deactivate)");
+        System.out.println("1. Student Operations (Create / View / Search / Deactivate)");
         System.out.println("2. Course Operations (Create / View List / Change Status)");
-        System.out.println("3. Enrollment Operations (Enroll Student / View Ledger / Update Status)");
-        System.out.println("4. Process Custom Bulk Commands from CSV File");
-        System.out.println("5. Start New Database Transaction");
-        System.out.println("6. Commit Current Transaction Frame");
-        System.out.println("7. Rollback Current Transaction Frame");
+        System.out.println("3. Enrollment Operations (Enroll / View By Student / Update Status)");
+        System.out.println("4. Auto Ingest Default Seed Data (data/seed.csv)");
         System.out.println("9. Exit Application Engine");
     }
 
-    private static void processInput(String input, Scanner scanner) throws IOException {
+    private static void processInput(String input, Scanner scanner) {
         switch (input) {
             case "1":
                 handleStudentOperations(scanner);
@@ -110,20 +120,7 @@ public class Main {
                 handleEnrollmentOperations(scanner);
                 break;
             case "4":
-                System.out.print("Provide system path to target CSV script file: ");
-                executeCSVBulkLoad(scanner.nextLine().trim());
-                break;
-            case "5":
-                beginTransaction();
-                System.out.println("New transaction frame started successfully.");
-                break;
-            case "6":
-                commitTransaction();
-                System.out.println("Transaction frame committed successfully.");
-                break;
-            case "7":
-                rollbackTransaction();
-                System.out.println("Transaction frame rolled back successfully.");
+                ingestDefaultSeed();
                 break;
             default:
                 throw new InvalidInputException("Supplied operation code is invalid.");
@@ -136,6 +133,7 @@ public class Main {
         System.out.println("A. Create Student Profile");
         System.out.println("B. Display Student Ledger");
         System.out.println("C. Deactivate Student Profile");
+        System.out.println("D. Search Student by ID");
         System.out.print("Option: ");
 
         String selection = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
@@ -148,6 +146,9 @@ public class Main {
                 break;
             case "C":
                 deactivateStudent(scanner);
+                break;
+            case "D":
+                searchStudentById(scanner);
                 break;
             default:
                 throw new InvalidInputException("Selection is invalid.");
@@ -185,6 +186,23 @@ public class Main {
         int targetId = readInt(scanner, "Enter Target Student ID: ");
         studentService.deactivateStudent(targetId);
         System.out.println("Student status deactivated.");
+    }
+
+    private static void searchStudentById(Scanner scanner) {
+        int targetId = readInt(scanner, "Enter Target Student ID: ");
+        Student student = studentService.findStudentById(targetId);
+        List<String[]> dataRows = new ArrayList<>();
+        dataRows.add(new String[] {
+                String.valueOf(student.getId()),
+                student.getFirstName() + " " + student.getLastName(),
+                student.getEmail(),
+                student.getBatch(),
+                String.valueOf(student.isActive())
+        });
+        ConsolePresenter.printTable(
+                new String[] {"Student ID", "Name", "Email", "Batch", "Active"},
+                dataRows
+        );
     }
 
     private static void handleCourseOperations(Scanner scanner) {
@@ -245,9 +263,9 @@ public class Main {
         System.out.println();
         System.out.println("--- Enrollment Management Console ---");
         System.out.println("A. Enroll Student in Course");
-        System.out.println("B. Display Enrollment Ledger");
+        System.out.println("B. View Enrollments for Student");
         System.out.println("C. Update Enrollment Status");
-        System.out.println("D. Display Enrollments for Student");
+        System.out.println("D. Display All Enrollment Ledger");
         System.out.print("Option: ");
 
         String selection = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
@@ -256,13 +274,13 @@ public class Main {
                 enrollStudent(scanner);
                 break;
             case "B":
-                printEnrollments();
+                printEnrollmentsForStudent(scanner);
                 break;
             case "C":
                 updateEnrollmentStatus(scanner);
                 break;
             case "D":
-                printEnrollmentsForStudent(scanner);
+                printEnrollments();
                 break;
             default:
                 throw new InvalidInputException("Selection is invalid.");
@@ -317,12 +335,12 @@ public class Main {
 
     private static void updateEnrollmentStatus(Scanner scanner) {
         int enrollmentId = readInt(scanner, "Enrollment ID: ");
-        String status = readRequired(scanner, "Status (ACTIVE / COMPLETED / CANCELLED): ");
+        String status = readEnrollmentStatus(scanner, "Status (ACTIVE / COMPLETED / CANCELLED): ");
         enrollmentService.updateStatus(enrollmentId, status);
         System.out.println("Enrollment status updated.");
     }
 
-    private static void executeCSVBulkLoad(String path) {
+    private static boolean executeCSVBulkLoad(String path) {
         String resolvedPath = requireText(path, "CSV script path");
         System.out.println();
         System.out.println("Loading CSV commands from: " + resolvedPath);
@@ -332,11 +350,15 @@ public class Main {
             for (String[] operation : operations) {
                 executeCSVOperation(operation);
             }
-        } catch (Exception exception) {
+            return true;
+        } catch (IOException exception) {
             System.out.println();
             System.out.println("CSV Execution Failed: " + exception.getMessage());
-            System.out.println("Rolling back active transaction contexts...");
-            rollbackActiveTransactions();
+            return false;
+        } catch (LearnTrackException | IllegalArgumentException exception) {
+            System.out.println();
+            System.out.println("CSV Execution Failed: " + exception.getMessage());
+            return false;
         }
     }
 
@@ -345,28 +367,17 @@ public class Main {
             return;
         }
 
-        String commandType = operation[0].trim().toUpperCase(Locale.ROOT);
+        String commandType = removeByteOrderMark(operation[0].trim());
+        if (commandType.isEmpty() || commandType.startsWith("#")) {
+            return;
+        }
+        commandType = commandType.toUpperCase(Locale.ROOT);
         switch (commandType) {
-            case "START_TX":
-                beginTransaction();
-                System.out.println("  -> Opened atomic database transaction context.");
-                break;
-            case "COMMIT_TX":
-                commitTransaction();
-                System.out.println("  -> Committed active transactions.");
-                break;
-            case "ROLLBACK_TX":
-                rollbackTransaction();
-                System.out.println("  -> Discarded active transactions.");
-                break;
             case "POST":
                 executePostCSV(operation);
                 break;
             case "PUT":
                 executePutCSV(operation);
-                break;
-            case "DELETE":
-                executeDeleteCSV(operation);
                 break;
             case "GET":
                 executeGetCSV(operation);
@@ -428,33 +439,11 @@ public class Main {
                 System.out.println("     PUT (Course) status updated successfully: " + entityId);
                 break;
             case "enrollment":
-                enrollmentService.updateStatus(entityId, getCell(operation, 3, "status"));
+                enrollmentService.updateStatus(entityId, normalizeEnrollmentStatus(getCell(operation, 3, "status")));
                 System.out.println("     PUT (Enrollment) updated successfully: " + entityId);
                 break;
             default:
                 throw new InvalidInputException("Invalid update entity: " + entityType);
-        }
-    }
-
-    private static void executeDeleteCSV(String[] operation) {
-        String entityType = getCell(operation, 1, "entityType").toLowerCase(Locale.ROOT);
-        int entityId = parseIntCell(operation, 2, "entityId");
-
-        switch (entityType) {
-            case "student":
-                studentService.deleteStudent(entityId);
-                System.out.println("     DELETE (Student) removed from database scope: " + entityId);
-                break;
-            case "course":
-                courseService.deleteCourse(entityId);
-                System.out.println("     DELETE (Course) removed from database scope: " + entityId);
-                break;
-            case "enrollment":
-                enrollmentService.deleteEnrollment(entityId);
-                System.out.println("     DELETE (Enrollment) removed from database scope: " + entityId);
-                break;
-            default:
-                throw new InvalidInputException("Invalid target deletion entity: " + entityType);
         }
     }
 
@@ -493,61 +482,6 @@ public class Main {
         return new Student(entityId, firstName, lastName, email, batch, active);
     }
 
-    private static void beginTransaction() {
-        studentService.begin();
-        courseService.begin();
-        enrollmentService.begin();
-    }
-
-    private static void commitTransaction() {
-        studentService.commit();
-        courseService.commit();
-        enrollmentService.commit();
-    }
-
-    private static void rollbackTransaction() {
-        studentService.rollback();
-        courseService.rollback();
-        enrollmentService.rollback();
-    }
-
-    private static void rollbackActiveTransactions() {
-        rollbackStudentIfActive();
-        rollbackCourseIfActive();
-        rollbackEnrollmentIfActive();
-        System.out.println("State restored successfully.");
-    }
-
-    private static void rollbackStudentIfActive() {
-        try {
-            if (studentService.isTxActive()) {
-                studentService.rollback();
-            }
-        } catch (Exception exception) {
-            System.out.println("Recovery fault in student store: " + exception.getMessage());
-        }
-    }
-
-    private static void rollbackCourseIfActive() {
-        try {
-            if (courseService.isTxActive()) {
-                courseService.rollback();
-            }
-        } catch (Exception exception) {
-            System.out.println("Recovery fault in course store: " + exception.getMessage());
-        }
-    }
-
-    private static void rollbackEnrollmentIfActive() {
-        try {
-            if (enrollmentService.isTxActive()) {
-                enrollmentService.rollback();
-            }
-        } catch (Exception exception) {
-            System.out.println("Recovery fault in enrollment store: " + exception.getMessage());
-        }
-    }
-
     private static String readRequired(Scanner scanner, String prompt) {
         System.out.print(prompt);
         if (!scanner.hasNextLine()) {
@@ -557,11 +491,20 @@ public class Main {
     }
 
     private static int readInt(Scanner scanner, String prompt) {
-        return Integer.parseInt(readRequired(scanner, prompt));
+        String value = readRequired(scanner, prompt);
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException exception) {
+            throw new InvalidInputException("Field must be an integer: " + cleanPrompt(prompt));
+        }
     }
 
     private static boolean readBoolean(Scanner scanner, String prompt) {
-        return parseBoolean(readRequired(scanner, prompt), prompt.replace(":", ""));
+        return parseBoolean(readRequired(scanner, prompt), cleanPrompt(prompt));
+    }
+
+    private static String readEnrollmentStatus(Scanner scanner, String prompt) {
+        return normalizeEnrollmentStatus(readRequired(scanner, prompt));
     }
 
     private static String getCell(String[] operation, int index, String fieldName) {
@@ -594,10 +537,31 @@ public class Main {
         throw new InvalidInputException("Field must be true or false: " + fieldName);
     }
 
+    private static String normalizeEnrollmentStatus(String status) {
+        String normalizedStatus = requireText(status, "Enrollment status").toUpperCase(Locale.ROOT);
+        if (STATUS_ACTIVE.equals(normalizedStatus)
+                || STATUS_COMPLETED.equals(normalizedStatus)
+                || STATUS_CANCELLED.equals(normalizedStatus)) {
+            return normalizedStatus;
+        }
+        throw new InvalidInputException("Enrollment status must be ACTIVE, COMPLETED, or CANCELLED.");
+    }
+
     private static String requireText(String value, String fieldName) {
         if (value == null || value.trim().isEmpty()) {
             throw new InvalidInputException(fieldName + " is required.");
         }
         return value.trim();
+    }
+
+    private static String removeByteOrderMark(String value) {
+        if (!value.isEmpty() && value.charAt(0) == '\uFEFF') {
+            return value.substring(1);
+        }
+        return value;
+    }
+
+    private static String cleanPrompt(String prompt) {
+        return prompt.replace(":", "").trim();
     }
 }

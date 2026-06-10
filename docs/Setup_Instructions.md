@@ -66,7 +66,7 @@ The container compiles Java files from `src` into `out` and runs:
 java -cp out com.airtribe.learntrack.Main
 ```
 
-The container compiles Java files from `src`, starts `com.airtribe.learntrack.Main`, and auto-loads `data/seed.csv` when the seed file is present.
+The container compiles Java files from `src` and starts `com.airtribe.learntrack.Main`. From the menu, choose option `4` to ingest `data/seed.csv`.
 
 To run one-off commands inside the project container:
 

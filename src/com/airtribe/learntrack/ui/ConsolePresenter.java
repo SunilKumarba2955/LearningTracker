@@ -17,10 +17,16 @@ public final class ConsolePresenter {
      *
      * @param headers non-empty column headers
      * @param rows table body rows; null rows are ignored and null cells render as {@code N/A}
-     * @throws IllegalArgumentException if headers are null, empty, contain null values,
-     *         or if any row has more cells than there are headers
      */
     public static void printTable(String[] headers, List<String[]> rows) {
+        try {
+            printValidatedTable(headers, rows);
+        } catch (IllegalArgumentException exception) {
+            System.out.println("Unable to render table: " + exception.getMessage());
+        }
+    }
+
+    private static void printValidatedTable(String[] headers, List<String[]> rows) {
         validateHeaders(headers);
 
         int[] columnWidths = calculateColumnWidths(headers, rows);
@@ -71,7 +77,7 @@ public final class ConsolePresenter {
     private static String buildSeparatorLine(int[] columnWidths) {
         StringBuilder borderBuilder = new StringBuilder("+");
         for (int width : columnWidths) {
-            borderBuilder.append("-".repeat(width + 2)).append("+");
+            borderBuilder.append(repeat('-', width + 2)).append("+");
         }
         return borderBuilder.toString();
     }
@@ -83,7 +89,7 @@ public final class ConsolePresenter {
             int padding = columnWidths[i] - value.length();
             rowBuilder.append(' ')
                     .append(value)
-                    .append(" ".repeat(padding + 1))
+                    .append(repeat(' ', padding + 1))
                     .append('|');
         }
         System.out.println(rowBuilder);
@@ -102,5 +108,13 @@ public final class ConsolePresenter {
                 throw new IllegalArgumentException("header must not be null");
             }
         }
+    }
+
+    private static String repeat(char value, int count) {
+        StringBuilder builder = new StringBuilder(count);
+        for (int i = 0; i < count; i++) {
+            builder.append(value);
+        }
+        return builder.toString();
     }
 }

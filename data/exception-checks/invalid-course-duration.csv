@@ -1,3 +1,2 @@
 ﻿# Expected: durationInWeeks must be greater than zero
-START_TX,,,
 POST,course,2903,Bad Duration Course,Course with invalid duration,0,true

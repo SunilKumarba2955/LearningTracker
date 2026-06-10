@@ -1,80 +1,77 @@
-# Engineering Design Evaluations
+# Engineering Design Notes
 
-This document summarizes the main engineering decisions behind the LearnTrack system and the trade-offs selected during implementation.
+This document explains the main LearnTrack design choices in the language of the assignment brief.
 
-## End-to-End Execution Flow
+## End-to-End Flow
 
 ```text
-CSV Script / Console Input
+Console Input / Seed CSV
           |
           v
-Main CLI Orchestrator
+Main CLI Menu
           |
           v
-Application Services
+Service Classes
           |
           v
-ArrayList-backed Service Storage
+ArrayList Records
           |
           v
 Domain Entities
 
-Console CLI Output <--- ConsolePresenter <--- Service Query Results
+Console Output <--- ConsolePresenter <--- Service Query Results
 ```
 
-The architecture keeps command parsing, CSV scripting, transaction coordination, presentation formatting, and domain rules in separate modules. This prevents changes to input schemas, display layout, or persistence mechanics from forcing changes in the core entities.
+`Main` displays menus, reads input, and calls service methods. The service classes hold the `ArrayList` data and enforce business rules. Entity classes keep private fields and expose getters/setters for encapsulation.
 
-## Performance Analysis: ArrayList vs. Native Fixed Arrays
+## Why ArrayList Instead of Array
 
-Native Java arrays allocate a fixed-size sequential block of memory. They are efficient when the size is known in advance, but they cannot grow dynamically. If the boundary is exceeded, a developer must allocate a new array, copy values manually, and update all references.
+Native arrays have a fixed size. A student-management system does not know in advance how many students, courses, or enrollments an admin will create.
 
-`ArrayList<T>` provides a safer abstraction for dynamic records. It manages resizing internally and supports amortized O(1) append behavior. LearnTrack uses collection abstractions where record counts are unknown, such as CSV rows, query results, and table-rendering models.
+`ArrayList` grows dynamically and keeps add, search, update, and list operations simple. LearnTrack uses:
 
-## Transaction Handling Trade-Off
+- `ArrayList<Student>` in `StudentService`
+- `ArrayList<Course>` in `CourseService`
+- `ArrayList<Enrollment>` in `EnrollmentService`
 
-LearnTrack keeps storage inside the service layer using `ArrayList<T>` collections. Each service supports simple transaction behavior by saving an `ArrayList` snapshot when a transaction begins. Commit discards the snapshot, while rollback restores the previous list.
+## Static Members
 
-This design is intentionally simpler than a generic database abstraction. It keeps the required collection operations visible in the service classes while still giving the CLI enough transaction behavior to demonstrate commit and rollback.
+`IdGenerator` uses private static counters and public static methods such as `getNextStudentId()`. This keeps ID creation centralized and avoids duplicating counter logic in the menu code.
 
-## CSV Parser Trade-Off
+## Inheritance and Polymorphism
 
-The CSV parser uses a single-character state machine rather than `String.split(",")`. Naive splitting fails on quoted fields that contain commas, escaped quotes, or embedded newlines. The state machine tracks normal, quoted, and quote-escaped states so command scripts can safely include real CSV data.
+`Person` is the base class for people in the system. `Student` and `Trainer` extend `Person`.
 
-## Thread-Safe Static Access vs. Dependency Injection
+`Student` overrides `getDisplayName()` to include student-specific batch information. This demonstrates basic polymorphism because a `Person` reference can call `getDisplayName()` and receive subtype-specific behavior.
 
-`IdGenerator` is a static utility with synchronized methods. This makes ID generation simple for the CLI and seed interpreter while preventing race conditions in multi-threaded usage.
+## Exception Handling
 
-For larger systems, dependency injection would be preferable because it makes components easier to mock, replace, and configure. LearnTrack already applies constructor injection for services and stores, so the codebase can evolve toward injectable ID generation later without disturbing domain entities.
+LearnTrack uses custom unchecked exceptions for expected application faults:
+
+- `InvalidInputException` for invalid menu, CSV, or field values
+- `EntityNotFoundException` when a requested student, course, or enrollment ID does not exist
+
+The CLI catches these known exceptions and prints clean messages so the menu can continue.
+
+## Seed CSV Trade-Off
+
+The project is in-memory only, as required. `data/seed.csv` is a convenience script for quickly loading enough records for evaluation, not persistent storage. The evaluator can select menu option `4` and load all sample students, courses, and enrollments without typing hundreds of records manually.
 
 ## Code Quality Invariants
 
-- Domain entities contain business state and validation only.
-- Application services coordinate business rules and own `ArrayList` storage.
-- Service transaction snapshots protect create, update, delete, commit, and rollback workflows.
-- `CSVParser` owns file parsing and writing mechanics.
-- `ConsolePresenter` owns tabular terminal formatting.
-- `Main` is the outer orchestration boundary that wires components together.
-
-## Final Integration Verification
-
-The final seed file exercises the startup automation path by opening a transaction, inserting students, courses, and enrollments, committing the transaction, running read checks, and applying a student update in a second committed transaction. This keeps the default runtime path useful for reviewers while validating the interaction among the CSV parser, command interpreter, services, ID synchronization, and service-level transaction snapshots.
+- Entity classes own state and simple invariants.
+- Service classes own `ArrayList` storage and business rules.
+- `Main` owns menu display and user input flow.
+- `CSVParser` owns seed CSV parsing.
+- `ConsolePresenter` owns table formatting.
+- Invalid input is reported with clear messages instead of stack traces.
 
 ## Architectural Comparison
 
-| Technical Component | Custom Architecture Design | Alternative Design Option | Trade-Off |
-| --- | --- | --- | --- |
-| In-memory storage | Service-owned `ArrayList` collections | Generic repository or database abstraction | Direct collection use matches the assignment rubric and keeps add/search/update/list logic visible. |
-| CSV parsing | Character-level state machine | `line.split(",")` | State transitions correctly preserve quoted commas, quotes, and newlines. |
-| Architecture layout | Inward-pointing Clean Architecture layers | Controller-service-repository coupling | Core rules stay independent of CLI, CSV, and storage details. |
-| Error management | Custom unchecked exception hierarchy | Direct runtime termination | Errors can be reported at the boundary while allowing the JVM process to continue. |
-| Console rendering | Dynamic table presenter | Ad hoc string concatenation in CLI handlers | Presentation logic stays reusable and out of business services. |
-
-## Architectural Summary
-
-LearnTrack demonstrates a zero-dependency Core Java application with clean boundaries, visible collection handling, transaction safety, robust CSV scripting, custom terminal presentation, and service-layer business orchestration. The resulting system is small enough to inspect easily while still modeling patterns used in professional Java systems.
-
-## References
-
-- Robert C. Martin, Clean Architecture principles
-- Java Platform documentation for collections, synchronization, and exception handling
-- RFC 4180 CSV format conventions
+| Component | LearnTrack Choice | Why |
+| --- | --- | --- |
+| In-memory storage | Service-owned `ArrayList` collections | Matches the assignment goal of practicing collection operations directly. |
+| ID creation | Static `IdGenerator` | Demonstrates static members with one shared counter source. |
+| Person model | `Person`, `Student`, `Trainer` | Demonstrates inheritance, `super`, and method overriding. |
+| Error handling | Custom exceptions plus CLI catch blocks | Keeps the app running after expected input mistakes. |
+| Output rendering | `ConsolePresenter` | Keeps table formatting out of service logic. |

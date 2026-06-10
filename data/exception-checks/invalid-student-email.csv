@@ -1,3 +1,2 @@
 ﻿# Expected: email must contain @
-START_TX,,,
 POST,student,1903,Bad,Email,bad-email-value,Cohort-X,true

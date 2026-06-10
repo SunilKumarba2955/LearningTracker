@@ -3,11 +3,8 @@ package com.airtribe.learntrack.service;
 import com.airtribe.learntrack.entity.Student;
 import com.airtribe.learntrack.exception.EntityNotFoundException;
 import com.airtribe.learntrack.exception.InvalidInputException;
-import com.airtribe.learntrack.exception.TransactionException;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 
 /**
@@ -18,7 +15,6 @@ import java.util.List;
  */
 public class StudentService {
     private final List<Student> students = new ArrayList<>();
-    private final Deque<List<Student>> transactionSnapshots = new ArrayDeque<>();
 
     /**
      * Adds a student after service-level validation.
@@ -99,47 +95,6 @@ public class StudentService {
         students.remove(index);
     }
 
-    /**
-     * Starts a transaction snapshot.
-     */
-    public void begin() {
-        transactionSnapshots.push(copyStudents(students));
-    }
-
-    /**
-     * Commits the current transaction snapshot.
-     *
-     * @throws TransactionException if no transaction is active
-     */
-    public void commit() {
-        if (transactionSnapshots.isEmpty()) {
-            throw new TransactionException("Database Failure: No active transaction to commit.");
-        }
-        transactionSnapshots.pop();
-    }
-
-    /**
-     * Rolls back to the previous transaction snapshot.
-     *
-     * @throws TransactionException if no transaction is active
-     */
-    public void rollback() {
-        if (transactionSnapshots.isEmpty()) {
-            throw new TransactionException("Database Failure: No active transaction to roll back.");
-        }
-        students.clear();
-        students.addAll(transactionSnapshots.pop());
-    }
-
-    /**
-     * Indicates whether a transaction is active.
-     *
-     * @return {@code true} when a transaction snapshot exists
-     */
-    public boolean isTxActive() {
-        return !transactionSnapshots.isEmpty();
-    }
-
     private Student findStudentInternal(int id) {
         int index = findStudentIndexById(id);
         if (index < 0) {
@@ -174,14 +129,6 @@ public class StudentService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
-    }
-
-    private List<Student> copyStudents(List<Student> source) {
-        List<Student> copiedStudents = new ArrayList<>();
-        for (Student student : source) {
-            copiedStudents.add(copyStudent(student));
-        }
-        return copiedStudents;
     }
 
     private Student copyStudent(Student student) {

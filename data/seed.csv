@@ -1,6 +1,5 @@
 ﻿# Large Auto-Injection Seed Configuration
 # 220 students, 12 courses, 240 enrollments, plus safe verification commands
-START_TX,,,
 POST,student,1001,Aarav,Sharma,aarav.sharma1001@learntrack.example.com,Cohort-A,true
 POST,student,1002,Aditi,Sharma,aditi.sharma1002@learntrack.example.com,Cohort-B,true
 POST,student,1003,Arjun,Sharma,arjun.sharma1003@learntrack.example.com,Cohort-C,true
@@ -225,7 +224,7 @@ POST,course,2001,Java Software Design,Clean Architecture and SOLID design,12,tru
 POST,course,2002,Advanced Systems Engineering,High performance Java architectures,16,true
 POST,course,2003,Data Structures in Java,Lists maps trees and algorithmic thinking,10,true
 POST,course,2004,CLI Application Engineering,Command interpreters validation and terminal UX,8,true
-POST,course,2005,Transactional Systems,Atomicity rollback and in memory consistency,9,true
+POST,course,2005,Distributed Systems,Consistency patterns for in memory services,9,true
 POST,course,2006,CSV Processing Engines,State machine parsing and scripting workflows,6,true
 POST,course,2007,Object Oriented Modeling,Encapsulation inheritance and polymorphism,7,true
 POST,course,2008,Exception Safety Patterns,Custom exceptions and boundary handlers,5,true
@@ -473,7 +472,6 @@ POST,enrollment,3237,1017,2009,2026-06-13,CANCELLED
 POST,enrollment,3238,1018,2010,2026-06-14,ACTIVE
 POST,enrollment,3239,1019,2011,2026-06-15,COMPLETED
 POST,enrollment,3240,1020,2012,2026-06-16,CANCELLED
-COMMIT_TX,,,
 # Safe verification commands
 GET,student,1001
 GET,student,1220
@@ -481,10 +479,8 @@ GET,course,2001
 GET,course,2012
 GET,enrollment,3001
 GET,enrollment,3240
-START_TX,,,
 PUT,student,1001,Aarav,Sharma-Verified,aarav.verified1001@learntrack.example.com,Cohort-A,true
 PUT,course,2001,false
 PUT,enrollment,3001,COMPLETED
-DELETE,student,1002
-ROLLBACK_TX,,,
+PUT,student,1002,Aditi,Sharma,aditi.sharma1002@learntrack.example.com,Cohort-B,false
 GET,student,1002

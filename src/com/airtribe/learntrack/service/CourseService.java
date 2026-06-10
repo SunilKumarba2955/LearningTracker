@@ -3,11 +3,8 @@ package com.airtribe.learntrack.service;
 import com.airtribe.learntrack.entity.Course;
 import com.airtribe.learntrack.exception.EntityNotFoundException;
 import com.airtribe.learntrack.exception.InvalidInputException;
-import com.airtribe.learntrack.exception.TransactionException;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 
 /**
@@ -15,7 +12,6 @@ import java.util.List;
  */
 public class CourseService {
     private final List<Course> courses = new ArrayList<>();
-    private final Deque<List<Course>> transactionSnapshots = new ArrayDeque<>();
 
     /**
      * Adds a course after service-level validation.
@@ -81,47 +77,6 @@ public class CourseService {
         courses.remove(index);
     }
 
-    /**
-     * Starts a transaction snapshot.
-     */
-    public void begin() {
-        transactionSnapshots.push(copyCourses(courses));
-    }
-
-    /**
-     * Commits the current transaction snapshot.
-     *
-     * @throws TransactionException if no transaction is active
-     */
-    public void commit() {
-        if (transactionSnapshots.isEmpty()) {
-            throw new TransactionException("Database Failure: No active transaction to commit.");
-        }
-        transactionSnapshots.pop();
-    }
-
-    /**
-     * Rolls back to the previous transaction snapshot.
-     *
-     * @throws TransactionException if no transaction is active
-     */
-    public void rollback() {
-        if (transactionSnapshots.isEmpty()) {
-            throw new TransactionException("Database Failure: No active transaction to roll back.");
-        }
-        courses.clear();
-        courses.addAll(transactionSnapshots.pop());
-    }
-
-    /**
-     * Indicates whether a transaction is active.
-     *
-     * @return {@code true} when a transaction snapshot exists
-     */
-    public boolean isTxActive() {
-        return !transactionSnapshots.isEmpty();
-    }
-
     private Course findCourseInternal(int id) {
         int index = findCourseIndexById(id);
         if (index < 0) {
@@ -156,14 +111,6 @@ public class CourseService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
-    }
-
-    private List<Course> copyCourses(List<Course> source) {
-        List<Course> copiedCourses = new ArrayList<>();
-        for (Course course : source) {
-            copiedCourses.add(copyCourse(course));
-        }
-        return copiedCourses;
     }
 
     private Course copyCourse(Course course) {

@@ -1,17 +1,54 @@
-﻿# LearnTrack: Enterprise-Core Student and Course Management Engine
+# LearnTrack: Student and Course Management System
 
-LearnTrack is a modular Student and Course Management System built with Core Java. It demonstrates Clean Architecture, transactional in-memory state tracking, CSV command automation, and robust exception-safe CLI workflows without external dependencies.
+LearnTrack is a console-based Student and Course Management System built with Core Java. It focuses on the fundamentals from the assignment brief: packages, classes, constructors, encapsulation, inheritance, method overriding, `ArrayList` collection handling, custom exceptions, and a menu-driven CLI.
 
-## Key Features
+## Features
 
-- Clean Architecture implementation with inward-pointing dependencies
-- Domain entities for students, trainers, courses, and enrollments
-- Service layer for business validation and referential integrity
-- ArrayList-backed in-memory services with transaction snapshots
-- Zero-dependency RFC 4180-style CSV parser and writer
-- CSV command scripting for automated seeding and verification
-- Dynamic tabular console presenter for readable terminal output
-- Custom unchecked exception hierarchy for boundary-level error handling
+- Manage students, courses, and enrollments from a terminal menu
+- Add, list, search, update, deactivate, and enroll records in memory
+- Store runtime data in service-owned `ArrayList` collections
+- Use `Person` as a base class and `Student` / `Trainer` as child classes
+- Generate IDs with a static `IdGenerator` utility
+- Handle invalid menu input, missing IDs, invalid emails, invalid booleans, and unsupported enrollment statuses with clean messages
+- Load the large evaluator seed file from menu option `4`
+- Print readable ASCII tables through `ConsolePresenter`
+
+## Class Diagram
+
+```text
+                 +----------------------+
+                 |       Person         |
+                 +----------------------+
+                 | id                   |
+                 | firstName            |
+                 | lastName             |
+                 | email                |
+                 +----------------------+
+                 | getDisplayName()     |
+                 +----------^-----------+
+                            |
+              +-------------+-------------+
+              |                           |
+      +-------+--------+          +-------+--------+
+      |    Student     |          |    Trainer     |
+      +----------------+          +----------------+
+      | batch          |          | specialization |
+      | active         |          +----------------+
+      +----------------+
+
+      +----------------+          +----------------+
+      |     Course     |          |   Enrollment   |
+      +----------------+          +----------------+
+      | id             |          | id             |
+      | courseName     |          | studentId      |
+      | description    |          | courseId       |
+      | durationWeeks  |          | enrollmentDate |
+      | active         |          | status         |
+      +----------------+          +----------------+
+
+      StudentService       CourseService       EnrollmentService
+      ArrayList<Student>   ArrayList<Course>   ArrayList<Enrollment>
+```
 
 ## Repository Layout
 
@@ -54,48 +91,38 @@ javac -d bin $(find src -name "*.java")
 java -cp bin com.airtribe.learntrack.Main
 ```
 
-On startup, the application automatically loads `data/seed.csv` when the file is present. It then opens the interactive CLI menu.
+The app opens the interactive menu. Select option `4` to load `data/seed.csv` into memory.
 
 ## Docker Compose
-
-```bash
-docker compose up --build
-```
-
-For an attached interactive session:
 
 ```bash
 docker compose run --rm learntrack
 ```
 
-## CSV Command Script Format
+## Seed Data
 
-The default seed file uses these command shapes:
+The default seed file is:
 
-```csv
-START_TX
-POST,student,1001,Alexander,Hamilton,alexander@email.com,Cohort-A,true
-POST,course,2001,Java Software Design,Clean Code and SOLID patterns,12,true
-POST,enrollment,3001,1001,2001,2026-06-10,ACTIVE
-GET,student,1001
-PUT,enrollment,3001,COMPLETED
-DELETE,student,1001
-COMMIT_TX
-ROLLBACK_TX
+```text
+data/seed.csv
 ```
 
-## Documentation
+It contains:
 
-- `docs/Setup_Instructions.md`: compilation, execution, and Docker workflow
-- `docs/JVM_Basics.md`: JVM/JRE/JDK overview
-- `docs/Design_Notes.md`: design rationale, performance notes, and architectural trade-offs
+- 220 students
+- 12 courses
+- 240 enrollments
+- Safe `GET` and `PUT` verification rows
 
-## Validation
+From the main menu, use:
 
-The final system is validated with:
+```text
+Select Operational Code: 4
+```
 
-- JDK 17-compatible compilation
-- Default seed script execution through the CLI
-- Transaction commit and rollback behavior
-- CSV parsing for command automation
-- Console table rendering through interactive menu flows
+## More Help
+
+- `output.md`: complete CLI menu guide and verification examples
+- `docs/Setup_Instructions.md`: local and Docker setup
+- `docs/JVM_Basics.md`: JDK, JRE, JVM, bytecode, and WORA
+- `docs/Design_Notes.md`: ArrayList, static utility, inheritance, and clean code notes

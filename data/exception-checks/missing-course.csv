@@ -1,4 +1,3 @@
 ﻿# Expected: Target Course with ID 9999 could not be found
-START_TX,,,
 POST,student,1901,Exception,Student,exception.student1901@learntrack.example.com,Cohort-X,true
 POST,enrollment,3902,1901,9999,2026-06-10,ACTIVE

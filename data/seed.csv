@@ -1,0 +1,18 @@
+# Auto-Injection Seed Configuration
+START_TX,,,
+POST,student,1001,Alexander,Hamilton,alexander@email.com,Cohort-A,true
+POST,student,1002,Elizabeth,Schuyler,elizabeth@email.com,Cohort-A,true
+POST,student,1003,Aaron,Burr,burr@email.com,Cohort-B,true
+POST,course,2001,Java Software Design,Clean Code and SOLID patterns,12,true
+POST,course,2002,Advanced Systems Engineering,High Performance Architectures,16,true
+POST,enrollment,3001,1001,2001,2026-06-10,ACTIVE
+POST,enrollment,3002,1002,2001,2026-06-10,ACTIVE
+POST,enrollment,3003,1003,2002,2026-06-10,ACTIVE
+COMMIT_TX,,,
+# Interactive verification run
+GET,student,1001
+GET,course,2001
+# Modification operations
+START_TX,,,
+PUT,student,1001,Alexander,Hamilton-Schuyler,alex.schuyler@email.com,Cohort-A,true
+COMMIT_TX,,,

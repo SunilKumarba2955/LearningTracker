@@ -1,0 +1,4 @@
+﻿# Expected: Target Student with ID 9999 could not be found
+START_TX,,,
+POST,course,2901,Exception Course,Course for missing student test,4,true
+POST,enrollment,3901,9999,2901,2026-06-10,ACTIVE

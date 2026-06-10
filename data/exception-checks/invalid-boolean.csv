@@ -1,0 +1,3 @@
+﻿# Expected: Field must be true or false: active
+START_TX,,,
+POST,student,1904,Bad,Boolean,bad.boolean1904@learntrack.example.com,Cohort-X,maybe

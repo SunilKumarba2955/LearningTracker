@@ -7,7 +7,7 @@ LearnTrack is a modular Student and Course Management System built with Core Jav
 - Clean Architecture implementation with inward-pointing dependencies
 - Domain entities for students, trainers, courses, and enrollments
 - Service layer for business validation and referential integrity
-- ACID-style in-memory transaction engine with nested delta frames
+- ArrayList-backed in-memory services with transaction snapshots
 - Zero-dependency RFC 4180-style CSV parser and writer
 - CSV command scripting for automated seeding and verification
 - Dynamic tabular console presenter for readable terminal output
@@ -18,7 +18,6 @@ LearnTrack is a modular Student and Course Management System built with Core Jav
 ```text
 src/com/airtribe/learntrack/
   Main.java
-  db/
   entity/
   exception/
   service/

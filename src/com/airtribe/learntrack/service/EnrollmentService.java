@@ -1,10 +1,15 @@
 package com.airtribe.learntrack.service;
 
-import com.airtribe.learntrack.db.TransactionalStore;
+import com.airtribe.learntrack.entity.Course;
 import com.airtribe.learntrack.entity.Enrollment;
+import com.airtribe.learntrack.entity.Student;
 import com.airtribe.learntrack.exception.EntityNotFoundException;
 import com.airtribe.learntrack.exception.InvalidInputException;
+import com.airtribe.learntrack.exception.TransactionException;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
@@ -16,49 +21,55 @@ public class EnrollmentService {
     private static final String STATUS_COMPLETED = "COMPLETED";
     private static final String STATUS_CANCELLED = "CANCELLED";
 
-    private final TransactionalStore<Integer, Enrollment> db;
+    private final List<Enrollment> enrollments = new ArrayList<>();
+    private final Deque<List<Enrollment>> transactionSnapshots = new ArrayDeque<>();
     private final StudentService studentService;
     private final CourseService courseService;
 
     /**
-     * Creates an enrollment service backed by transactional storage and related services.
+     * Creates an enrollment service using related services for referential checks.
      *
-     * @param db transactional enrollment store
      * @param studentService service used to validate student references
      * @param courseService service used to validate course references
      * @throws InvalidInputException if any dependency is null
      */
-    public EnrollmentService(
-            TransactionalStore<Integer, Enrollment> db,
-            StudentService studentService,
-            CourseService courseService
-    ) {
-        if (db == null) {
-            throw new InvalidInputException("Enrollment store cannot be empty.");
-        }
+    public EnrollmentService(StudentService studentService, CourseService courseService) {
         if (studentService == null) {
-            throw new InvalidInputException("Student service cannot be empty.");
+            throw new InvalidInputException("Student service was not provided.");
         }
         if (courseService == null) {
-            throw new InvalidInputException("Course service cannot be empty.");
+            throw new InvalidInputException("Course service was not provided.");
         }
-        this.db = db;
         this.studentService = studentService;
         this.courseService = courseService;
     }
 
     /**
-     * Enrolls a student in a course after validating referential integrity.
+     * Enrolls a student in a course after validating business rules.
      *
      * @param enrollment enrollment to add
-     * @throws InvalidInputException if enrollment details are missing
+     * @throws InvalidInputException if enrollment details are missing, invalid, duplicated, or inactive
      * @throws EntityNotFoundException if the student or course reference does not exist
      */
     public void enrollStudent(Enrollment enrollment) {
         validateEnrollment(enrollment);
-        studentService.findStudentById(enrollment.getStudentId());
-        courseService.findCourseById(enrollment.getCourseId());
-        db.put(enrollment.getId(), enrollment);
+        if (findEnrollmentIndexById(enrollment.getId()) >= 0) {
+            throw new InvalidInputException("Validation error: Enrollment ID already exists.");
+        }
+        if (hasEnrollmentForStudentAndCourse(enrollment.getStudentId(), enrollment.getCourseId())) {
+            throw new InvalidInputException("Validation error: Student is already enrolled in this course.");
+        }
+
+        Student student = studentService.findStudentById(enrollment.getStudentId());
+        Course course = courseService.findCourseById(enrollment.getCourseId());
+        if (!student.isActive()) {
+            throw new InvalidInputException("Validation error: Cannot enroll an inactive student.");
+        }
+        if (!course.isActive()) {
+            throw new InvalidInputException("Validation error: Cannot enroll in an inactive course.");
+        }
+
+        enrollments.add(copyEnrollment(enrollment));
     }
 
     /**
@@ -70,50 +81,153 @@ public class EnrollmentService {
      * @throws EntityNotFoundException if no enrollment exists for the id
      */
     public void updateStatus(int enrollmentId, String status) {
-        Enrollment enrollment = findEnrollmentById(enrollmentId);
-        String formattedStatus = normalizeStatus(status);
-        Enrollment updatedEnrollment = new Enrollment(
-                enrollment.getId(),
-                enrollment.getStudentId(),
-                enrollment.getCourseId(),
-                enrollment.getEnrollmentDate(),
-                formattedStatus
-        );
-        db.put(enrollmentId, updatedEnrollment);
+        Enrollment enrollment = findEnrollmentInternal(enrollmentId);
+        enrollment.setStatus(normalizeStatus(status));
     }
 
     /**
      * Finds an enrollment by id.
      *
      * @param enrollmentId enrollment identifier
-     * @return matching enrollment
+     * @return matching enrollment copy
      * @throws EntityNotFoundException if no enrollment exists for the id
      */
     public Enrollment findEnrollmentById(int enrollmentId) {
-        Enrollment enrollment = db.get(enrollmentId);
-        if (enrollment == null) {
-            throw new EntityNotFoundException("Enrollment", enrollmentId);
-        }
-        return enrollment;
+        return copyEnrollment(findEnrollmentInternal(enrollmentId));
     }
 
     /**
-     * Lists all visible enrollments from the transactional store.
+     * Lists all enrollments.
      *
-     * @return current enrollment list
+     * @return defensive list copy containing enrollment copies
      */
     public List<Enrollment> listAllEnrollments() {
-        return db.getAll();
+        List<Enrollment> result = new ArrayList<>();
+        for (Enrollment enrollment : enrollments) {
+            result.add(copyEnrollment(enrollment));
+        }
+        return result;
+    }
+
+    /**
+     * Lists enrollments for a specific student.
+     *
+     * @param studentId student identifier
+     * @return defensive list copy of matching enrollments
+     */
+    public List<Enrollment> listEnrollmentsByStudentId(int studentId) {
+        studentService.findStudentById(studentId);
+        List<Enrollment> result = new ArrayList<>();
+        for (Enrollment enrollment : enrollments) {
+            if (enrollment.getStudentId() == studentId) {
+                result.add(copyEnrollment(enrollment));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Deletes an enrollment by id.
+     *
+     * @param enrollmentId enrollment identifier
+     * @throws EntityNotFoundException if no enrollment exists for the id
+     */
+    public void deleteEnrollment(int enrollmentId) {
+        int index = findEnrollmentIndexById(enrollmentId);
+        if (index < 0) {
+            throw new EntityNotFoundException("Enrollment", enrollmentId);
+        }
+        enrollments.remove(index);
+    }
+
+    /**
+     * Starts a transaction snapshot.
+     */
+    public void begin() {
+        transactionSnapshots.push(copyEnrollments(enrollments));
+    }
+
+    /**
+     * Commits the current transaction snapshot.
+     *
+     * @throws TransactionException if no transaction is active
+     */
+    public void commit() {
+        if (transactionSnapshots.isEmpty()) {
+            throw new TransactionException("Database Failure: No active transaction to commit.");
+        }
+        transactionSnapshots.pop();
+    }
+
+    /**
+     * Rolls back to the previous transaction snapshot.
+     *
+     * @throws TransactionException if no transaction is active
+     */
+    public void rollback() {
+        if (transactionSnapshots.isEmpty()) {
+            throw new TransactionException("Database Failure: No active transaction to roll back.");
+        }
+        enrollments.clear();
+        enrollments.addAll(transactionSnapshots.pop());
+    }
+
+    /**
+     * Indicates whether a transaction is active.
+     *
+     * @return {@code true} when a transaction snapshot exists
+     */
+    public boolean isTxActive() {
+        return !transactionSnapshots.isEmpty();
+    }
+
+    private Enrollment findEnrollmentInternal(int enrollmentId) {
+        int index = findEnrollmentIndexById(enrollmentId);
+        if (index < 0) {
+            throw new EntityNotFoundException("Enrollment", enrollmentId);
+        }
+        return enrollments.get(index);
+    }
+
+    private int findEnrollmentIndexById(int enrollmentId) {
+        for (int i = 0; i < enrollments.size(); i++) {
+            if (enrollments.get(i).getId() == enrollmentId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean hasEnrollmentForStudentAndCourse(int studentId, int courseId) {
+        for (Enrollment enrollment : enrollments) {
+            if (enrollment.getStudentId() == studentId && enrollment.getCourseId() == courseId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void validateEnrollment(Enrollment enrollment) {
         if (enrollment == null) {
             throw new InvalidInputException("Enrollment details cannot be empty.");
         }
+        if (enrollment.getId() <= 0) {
+            throw new InvalidInputException("Validation error: Enrollment ID must be positive.");
+        }
+        if (enrollment.getStudentId() <= 0) {
+            throw new InvalidInputException("Validation error: Student ID must be positive.");
+        }
+        if (enrollment.getCourseId() <= 0) {
+            throw new InvalidInputException("Validation error: Course ID must be positive.");
+        }
+        if (isBlank(enrollment.getEnrollmentDate())) {
+            throw new InvalidInputException("Validation error: Enrollment date is required.");
+        }
+        normalizeStatus(enrollment.getStatus());
     }
 
     private String normalizeStatus(String status) {
-        if (status == null || status.trim().isEmpty()) {
+        if (isBlank(status)) {
             throw new InvalidInputException("Validation error: Enrollment status is required.");
         }
 
@@ -124,5 +238,27 @@ public class EnrollmentService {
             throw new InvalidInputException("Validation error: Invalid enrollment status.");
         }
         return formattedStatus;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private List<Enrollment> copyEnrollments(List<Enrollment> source) {
+        List<Enrollment> copiedEnrollments = new ArrayList<>();
+        for (Enrollment enrollment : source) {
+            copiedEnrollments.add(copyEnrollment(enrollment));
+        }
+        return copiedEnrollments;
+    }
+
+    private Enrollment copyEnrollment(Enrollment enrollment) {
+        return new Enrollment(
+                enrollment.getId(),
+                enrollment.getStudentId(),
+                enrollment.getCourseId(),
+                enrollment.getEnrollmentDate(),
+                enrollment.getStatus()
+        );
     }
 }

@@ -1,7 +1,7 @@
 ﻿# Large Auto-Injection Seed Configuration
 # 220 students, 12 courses, 240 enrollments, plus safe verification commands
 START_TX,,,
-POST,student,1001,Aarav,Sharma,aarav.sharma1001@learntrack.example.com,Cohort-A,false
+POST,student,1001,Aarav,Sharma,aarav.sharma1001@learntrack.example.com,Cohort-A,true
 POST,student,1002,Aditi,Sharma,aditi.sharma1002@learntrack.example.com,Cohort-B,true
 POST,student,1003,Arjun,Sharma,arjun.sharma1003@learntrack.example.com,Cohort-C,true
 POST,student,1004,Ananya,Sharma,ananya.sharma1004@learntrack.example.com,Cohort-D,true
@@ -18,7 +18,7 @@ POST,student,1014,Vihaan,Sharma,vihaan.sharma1014@learntrack.example.com,Cohort-
 POST,student,1015,Zara,Sharma,zara.sharma1015@learntrack.example.com,Cohort-G,true
 POST,student,1016,Kabir,Sharma,kabir.sharma1016@learntrack.example.com,Cohort-H,true
 POST,student,1017,Nisha,Sharma,nisha.sharma1017@learntrack.example.com,Cohort-A,true
-POST,student,1018,Rahul,Sharma,rahul.sharma1018@learntrack.example.com,Cohort-B,false
+POST,student,1018,Rahul,Sharma,rahul.sharma1018@learntrack.example.com,Cohort-B,true
 POST,student,1019,Tara,Sharma,tara.sharma1019@learntrack.example.com,Cohort-C,true
 POST,student,1020,Yash,Sharma,yash.sharma1020@learntrack.example.com,Cohort-D,true
 POST,student,1021,Aarav,Iyer,aarav.iyer1021@learntrack.example.com,Cohort-E,true
@@ -35,7 +35,7 @@ POST,student,1031,Priya,Iyer,priya.iyer1031@learntrack.example.com,Cohort-G,true
 POST,student,1032,Rohan,Iyer,rohan.iyer1032@learntrack.example.com,Cohort-H,true
 POST,student,1033,Saanvi,Iyer,saanvi.iyer1033@learntrack.example.com,Cohort-A,true
 POST,student,1034,Vihaan,Iyer,vihaan.iyer1034@learntrack.example.com,Cohort-B,true
-POST,student,1035,Zara,Iyer,zara.iyer1035@learntrack.example.com,Cohort-C,false
+POST,student,1035,Zara,Iyer,zara.iyer1035@learntrack.example.com,Cohort-C,true
 POST,student,1036,Kabir,Iyer,kabir.iyer1036@learntrack.example.com,Cohort-D,true
 POST,student,1037,Nisha,Iyer,nisha.iyer1037@learntrack.example.com,Cohort-E,true
 POST,student,1038,Rahul,Iyer,rahul.iyer1038@learntrack.example.com,Cohort-F,true
@@ -52,7 +52,7 @@ POST,student,1048,Kavya,Reddy,kavya.reddy1048@learntrack.example.com,Cohort-H,tr
 POST,student,1049,Mira,Reddy,mira.reddy1049@learntrack.example.com,Cohort-A,true
 POST,student,1050,Neel,Reddy,neel.reddy1050@learntrack.example.com,Cohort-B,true
 POST,student,1051,Priya,Reddy,priya.reddy1051@learntrack.example.com,Cohort-C,true
-POST,student,1052,Rohan,Reddy,rohan.reddy1052@learntrack.example.com,Cohort-D,false
+POST,student,1052,Rohan,Reddy,rohan.reddy1052@learntrack.example.com,Cohort-D,true
 POST,student,1053,Saanvi,Reddy,saanvi.reddy1053@learntrack.example.com,Cohort-E,true
 POST,student,1054,Vihaan,Reddy,vihaan.reddy1054@learntrack.example.com,Cohort-F,true
 POST,student,1055,Zara,Reddy,zara.reddy1055@learntrack.example.com,Cohort-G,true
@@ -69,7 +69,7 @@ POST,student,1065,Dev,Mehta,dev.mehta1065@learntrack.example.com,Cohort-A,true
 POST,student,1066,Diya,Mehta,diya.mehta1066@learntrack.example.com,Cohort-B,true
 POST,student,1067,Ishaan,Mehta,ishaan.mehta1067@learntrack.example.com,Cohort-C,true
 POST,student,1068,Kavya,Mehta,kavya.mehta1068@learntrack.example.com,Cohort-D,true
-POST,student,1069,Mira,Mehta,mira.mehta1069@learntrack.example.com,Cohort-E,false
+POST,student,1069,Mira,Mehta,mira.mehta1069@learntrack.example.com,Cohort-E,true
 POST,student,1070,Neel,Mehta,neel.mehta1070@learntrack.example.com,Cohort-F,true
 POST,student,1071,Priya,Mehta,priya.mehta1071@learntrack.example.com,Cohort-G,true
 POST,student,1072,Rohan,Mehta,rohan.mehta1072@learntrack.example.com,Cohort-H,true
@@ -86,7 +86,7 @@ POST,student,1082,Aditi,Gupta,aditi.gupta1082@learntrack.example.com,Cohort-B,tr
 POST,student,1083,Arjun,Gupta,arjun.gupta1083@learntrack.example.com,Cohort-C,true
 POST,student,1084,Ananya,Gupta,ananya.gupta1084@learntrack.example.com,Cohort-D,true
 POST,student,1085,Dev,Gupta,dev.gupta1085@learntrack.example.com,Cohort-E,true
-POST,student,1086,Diya,Gupta,diya.gupta1086@learntrack.example.com,Cohort-F,false
+POST,student,1086,Diya,Gupta,diya.gupta1086@learntrack.example.com,Cohort-F,true
 POST,student,1087,Ishaan,Gupta,ishaan.gupta1087@learntrack.example.com,Cohort-G,true
 POST,student,1088,Kavya,Gupta,kavya.gupta1088@learntrack.example.com,Cohort-H,true
 POST,student,1089,Mira,Gupta,mira.gupta1089@learntrack.example.com,Cohort-A,true
@@ -103,7 +103,7 @@ POST,student,1099,Tara,Gupta,tara.gupta1099@learntrack.example.com,Cohort-C,true
 POST,student,1100,Yash,Gupta,yash.gupta1100@learntrack.example.com,Cohort-D,true
 POST,student,1101,Aarav,Nair,aarav.nair1101@learntrack.example.com,Cohort-E,true
 POST,student,1102,Aditi,Nair,aditi.nair1102@learntrack.example.com,Cohort-F,true
-POST,student,1103,Arjun,Nair,arjun.nair1103@learntrack.example.com,Cohort-G,false
+POST,student,1103,Arjun,Nair,arjun.nair1103@learntrack.example.com,Cohort-G,true
 POST,student,1104,Ananya,Nair,ananya.nair1104@learntrack.example.com,Cohort-H,true
 POST,student,1105,Dev,Nair,dev.nair1105@learntrack.example.com,Cohort-A,true
 POST,student,1106,Diya,Nair,diya.nair1106@learntrack.example.com,Cohort-B,true
@@ -120,7 +120,7 @@ POST,student,1116,Kabir,Nair,kabir.nair1116@learntrack.example.com,Cohort-D,true
 POST,student,1117,Nisha,Nair,nisha.nair1117@learntrack.example.com,Cohort-E,true
 POST,student,1118,Rahul,Nair,rahul.nair1118@learntrack.example.com,Cohort-F,true
 POST,student,1119,Tara,Nair,tara.nair1119@learntrack.example.com,Cohort-G,true
-POST,student,1120,Yash,Nair,yash.nair1120@learntrack.example.com,Cohort-H,false
+POST,student,1120,Yash,Nair,yash.nair1120@learntrack.example.com,Cohort-H,true
 POST,student,1121,Aarav,Patel,aarav.patel1121@learntrack.example.com,Cohort-A,true
 POST,student,1122,Aditi,Patel,aditi.patel1122@learntrack.example.com,Cohort-B,true
 POST,student,1123,Arjun,Patel,arjun.patel1123@learntrack.example.com,Cohort-C,true
@@ -137,7 +137,7 @@ POST,student,1133,Saanvi,Patel,saanvi.patel1133@learntrack.example.com,Cohort-E,
 POST,student,1134,Vihaan,Patel,vihaan.patel1134@learntrack.example.com,Cohort-F,true
 POST,student,1135,Zara,Patel,zara.patel1135@learntrack.example.com,Cohort-G,true
 POST,student,1136,Kabir,Patel,kabir.patel1136@learntrack.example.com,Cohort-H,true
-POST,student,1137,Nisha,Patel,nisha.patel1137@learntrack.example.com,Cohort-A,false
+POST,student,1137,Nisha,Patel,nisha.patel1137@learntrack.example.com,Cohort-A,true
 POST,student,1138,Rahul,Patel,rahul.patel1138@learntrack.example.com,Cohort-B,true
 POST,student,1139,Tara,Patel,tara.patel1139@learntrack.example.com,Cohort-C,true
 POST,student,1140,Yash,Patel,yash.patel1140@learntrack.example.com,Cohort-D,true
@@ -154,7 +154,7 @@ POST,student,1150,Neel,Kapoor,neel.kapoor1150@learntrack.example.com,Cohort-F,tr
 POST,student,1151,Priya,Kapoor,priya.kapoor1151@learntrack.example.com,Cohort-G,true
 POST,student,1152,Rohan,Kapoor,rohan.kapoor1152@learntrack.example.com,Cohort-H,true
 POST,student,1153,Saanvi,Kapoor,saanvi.kapoor1153@learntrack.example.com,Cohort-A,true
-POST,student,1154,Vihaan,Kapoor,vihaan.kapoor1154@learntrack.example.com,Cohort-B,false
+POST,student,1154,Vihaan,Kapoor,vihaan.kapoor1154@learntrack.example.com,Cohort-B,true
 POST,student,1155,Zara,Kapoor,zara.kapoor1155@learntrack.example.com,Cohort-C,true
 POST,student,1156,Kabir,Kapoor,kabir.kapoor1156@learntrack.example.com,Cohort-D,true
 POST,student,1157,Nisha,Kapoor,nisha.kapoor1157@learntrack.example.com,Cohort-E,true
@@ -171,7 +171,7 @@ POST,student,1167,Ishaan,Das,ishaan.das1167@learntrack.example.com,Cohort-G,true
 POST,student,1168,Kavya,Das,kavya.das1168@learntrack.example.com,Cohort-H,true
 POST,student,1169,Mira,Das,mira.das1169@learntrack.example.com,Cohort-A,true
 POST,student,1170,Neel,Das,neel.das1170@learntrack.example.com,Cohort-B,true
-POST,student,1171,Priya,Das,priya.das1171@learntrack.example.com,Cohort-C,false
+POST,student,1171,Priya,Das,priya.das1171@learntrack.example.com,Cohort-C,true
 POST,student,1172,Rohan,Das,rohan.das1172@learntrack.example.com,Cohort-D,true
 POST,student,1173,Saanvi,Das,saanvi.das1173@learntrack.example.com,Cohort-E,true
 POST,student,1174,Vihaan,Das,vihaan.das1174@learntrack.example.com,Cohort-F,true
@@ -188,7 +188,7 @@ POST,student,1184,Ananya,Rao,ananya.rao1184@learntrack.example.com,Cohort-H,true
 POST,student,1185,Dev,Rao,dev.rao1185@learntrack.example.com,Cohort-A,true
 POST,student,1186,Diya,Rao,diya.rao1186@learntrack.example.com,Cohort-B,true
 POST,student,1187,Ishaan,Rao,ishaan.rao1187@learntrack.example.com,Cohort-C,true
-POST,student,1188,Kavya,Rao,kavya.rao1188@learntrack.example.com,Cohort-D,false
+POST,student,1188,Kavya,Rao,kavya.rao1188@learntrack.example.com,Cohort-D,true
 POST,student,1189,Mira,Rao,mira.rao1189@learntrack.example.com,Cohort-E,true
 POST,student,1190,Neel,Rao,neel.rao1190@learntrack.example.com,Cohort-F,true
 POST,student,1191,Priya,Rao,priya.rao1191@learntrack.example.com,Cohort-G,true
@@ -205,7 +205,7 @@ POST,student,1201,Aarav,Bose,aarav.bose1201@learntrack.example.com,Cohort-A,true
 POST,student,1202,Aditi,Bose,aditi.bose1202@learntrack.example.com,Cohort-B,true
 POST,student,1203,Arjun,Bose,arjun.bose1203@learntrack.example.com,Cohort-C,true
 POST,student,1204,Ananya,Bose,ananya.bose1204@learntrack.example.com,Cohort-D,true
-POST,student,1205,Dev,Bose,dev.bose1205@learntrack.example.com,Cohort-E,false
+POST,student,1205,Dev,Bose,dev.bose1205@learntrack.example.com,Cohort-E,true
 POST,student,1206,Diya,Bose,diya.bose1206@learntrack.example.com,Cohort-F,true
 POST,student,1207,Ishaan,Bose,ishaan.bose1207@learntrack.example.com,Cohort-G,true
 POST,student,1208,Kavya,Bose,kavya.bose1208@learntrack.example.com,Cohort-H,true

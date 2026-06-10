@@ -14,7 +14,7 @@ Main CLI Orchestrator
 Application Services
           |
           v
-TransactionalStore
+ArrayList-backed Service Storage
           |
           v
 Domain Entities
@@ -30,11 +30,11 @@ Native Java arrays allocate a fixed-size sequential block of memory. They are ef
 
 `ArrayList<T>` provides a safer abstraction for dynamic records. It manages resizing internally and supports amortized O(1) append behavior. LearnTrack uses collection abstractions where record counts are unknown, such as CSV rows, query results, and table-rendering models.
 
-## Transaction Engine Trade-Off
+## Transaction Handling Trade-Off
 
-LearnTrack uses a stack-based delta-frame transaction engine. Writes are recorded in the active transaction frame instead of cloning the full database map. Reads scan from the newest frame toward committed storage to find the visible value.
+LearnTrack keeps storage inside the service layer using `ArrayList<T>` collections. Each service supports simple transaction behavior by saving an `ArrayList` snapshot when a transaction begins. Commit discards the snapshot, while rollback restores the previous list.
 
-Compared with copy-on-write cloning, the delta-stack approach reduces memory growth from O(N * T) to O(K * T), where N is the total record count, K is the number of mutated keys, and T is transaction nesting depth. Rollback is fast because discarding the top frame removes all uncommitted changes at once.
+This design is intentionally simpler than a generic database abstraction. It keeps the required collection operations visible in the service classes while still giving the CLI enough transaction behavior to demonstrate commit and rollback.
 
 ## CSV Parser Trade-Off
 
@@ -49,21 +49,21 @@ For larger systems, dependency injection would be preferable because it makes co
 ## Code Quality Invariants
 
 - Domain entities contain business state and validation only.
-- Application services coordinate business rules and store access.
-- `TransactionalStore` owns transaction behavior and does not know about specific entity types.
+- Application services coordinate business rules and own `ArrayList` storage.
+- Service transaction snapshots protect create, update, delete, commit, and rollback workflows.
 - `CSVParser` owns file parsing and writing mechanics.
 - `ConsolePresenter` owns tabular terminal formatting.
 - `Main` is the outer orchestration boundary that wires components together.
 
 ## Final Integration Verification
 
-The final seed file exercises the startup automation path by opening a transaction, inserting students, courses, and enrollments, committing the transaction, running read checks, and applying a student update in a second committed transaction. This keeps the default runtime path useful for reviewers while validating the interaction among the CSV parser, command interpreter, services, ID synchronization, and transaction store.
+The final seed file exercises the startup automation path by opening a transaction, inserting students, courses, and enrollments, committing the transaction, running read checks, and applying a student update in a second committed transaction. This keeps the default runtime path useful for reviewers while validating the interaction among the CSV parser, command interpreter, services, ID synchronization, and service-level transaction snapshots.
 
 ## Architectural Comparison
 
 | Technical Component | Custom Architecture Design | Alternative Design Option | Trade-Off |
 | --- | --- | --- | --- |
-| In-memory database | Stack-based delta frame engine | Full copy-on-write map cloning | Delta frames reduce memory churn and make rollback cheap. |
+| In-memory storage | Service-owned `ArrayList` collections | Generic repository or database abstraction | Direct collection use matches the assignment rubric and keeps add/search/update/list logic visible. |
 | CSV parsing | Character-level state machine | `line.split(",")` | State transitions correctly preserve quoted commas, quotes, and newlines. |
 | Architecture layout | Inward-pointing Clean Architecture layers | Controller-service-repository coupling | Core rules stay independent of CLI, CSV, and storage details. |
 | Error management | Custom unchecked exception hierarchy | Direct runtime termination | Errors can be reported at the boundary while allowing the JVM process to continue. |
@@ -71,7 +71,7 @@ The final seed file exercises the startup automation path by opening a transacti
 
 ## Architectural Summary
 
-LearnTrack demonstrates a zero-dependency Core Java application with clean boundaries, transaction safety, robust CSV scripting, custom terminal presentation, and service-layer business orchestration. The resulting system is small enough to inspect easily while still modeling patterns used in professional Java systems.
+LearnTrack demonstrates a zero-dependency Core Java application with clean boundaries, visible collection handling, transaction safety, robust CSV scripting, custom terminal presentation, and service-layer business orchestration. The resulting system is small enough to inspect easily while still modeling patterns used in professional Java systems.
 
 ## References
 

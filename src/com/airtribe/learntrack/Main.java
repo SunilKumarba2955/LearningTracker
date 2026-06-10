@@ -1,6 +1,5 @@
 package com.airtribe.learntrack;
 
-import com.airtribe.learntrack.db.TransactionalStore;
 import com.airtribe.learntrack.entity.Course;
 import com.airtribe.learntrack.entity.Enrollment;
 import com.airtribe.learntrack.entity.Student;
@@ -24,38 +23,9 @@ import java.util.Scanner;
  * Main CLI orchestrator for LearnTrack.
  */
 public class Main {
-    private static final Student STUDENT_TOMBSTONE = new Student(
-            Integer.MAX_VALUE - 2,
-            "Deleted",
-            "Student",
-            "deleted.student@learntrack.local",
-            "TOMBSTONE",
-            false
-    );
-    private static final Course COURSE_TOMBSTONE = new Course(
-            Integer.MAX_VALUE - 1,
-            "Deleted Course",
-            "Tombstone marker",
-            1,
-            false
-    );
-    private static final Enrollment ENROLLMENT_TOMBSTONE = new Enrollment(
-            Integer.MAX_VALUE,
-            Integer.MAX_VALUE - 2,
-            Integer.MAX_VALUE - 1,
-            "1970-01-01",
-            "CANCELLED"
-    );
-
-    private static final TransactionalStore<Integer, Student> studentDb = new TransactionalStore<>(STUDENT_TOMBSTONE);
-    private static final TransactionalStore<Integer, Course> courseDb = new TransactionalStore<>(COURSE_TOMBSTONE);
-    private static final TransactionalStore<Integer, Enrollment> enrollmentDb =
-            new TransactionalStore<>(ENROLLMENT_TOMBSTONE);
-
-    private static final StudentService studentService = new StudentService(studentDb);
-    private static final CourseService courseService = new CourseService(courseDb);
-    private static final EnrollmentService enrollmentService =
-            new EnrollmentService(enrollmentDb, studentService, courseService);
+    private static final StudentService studentService = new StudentService();
+    private static final CourseService courseService = new CourseService();
+    private static final EnrollmentService enrollmentService = new EnrollmentService(studentService, courseService);
 
     /**
      * Starts the LearnTrack command-line application.
@@ -277,6 +247,7 @@ public class Main {
         System.out.println("A. Enroll Student in Course");
         System.out.println("B. Display Enrollment Ledger");
         System.out.println("C. Update Enrollment Status");
+        System.out.println("D. Display Enrollments for Student");
         System.out.print("Option: ");
 
         String selection = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
@@ -289,6 +260,9 @@ public class Main {
                 break;
             case "C":
                 updateEnrollmentStatus(scanner);
+                break;
+            case "D":
+                printEnrollmentsForStudent(scanner);
                 break;
             default:
                 throw new InvalidInputException("Selection is invalid.");
@@ -314,6 +288,22 @@ public class Main {
         List<String[]> dataRows = new ArrayList<>();
         for (Enrollment enrollment : enrollmentService.listAllEnrollments()) {
             Student student = studentService.findStudentById(enrollment.getStudentId());
+            Course course = courseService.findCourseById(enrollment.getCourseId());
+            dataRows.add(new String[] {
+                    String.valueOf(enrollment.getId()),
+                    student.getFirstName() + " " + student.getLastName(),
+                    course.getCourseName(),
+                    enrollment.getStatus()
+            });
+        }
+        ConsolePresenter.printTable(new String[] {"Enrollment ID", "Student Name", "Course Title", "Status"}, dataRows);
+    }
+
+    private static void printEnrollmentsForStudent(Scanner scanner) {
+        int studentId = readInt(scanner, "Student ID: ");
+        Student student = studentService.findStudentById(studentId);
+        List<String[]> dataRows = new ArrayList<>();
+        for (Enrollment enrollment : enrollmentService.listEnrollmentsByStudentId(studentId)) {
             Course course = courseService.findCourseById(enrollment.getCourseId());
             dataRows.add(new String[] {
                     String.valueOf(enrollment.getId()),
@@ -452,15 +442,15 @@ public class Main {
 
         switch (entityType) {
             case "student":
-                studentDb.delete(entityId);
+                studentService.deleteStudent(entityId);
                 System.out.println("     DELETE (Student) removed from database scope: " + entityId);
                 break;
             case "course":
-                courseDb.delete(entityId);
+                courseService.deleteCourse(entityId);
                 System.out.println("     DELETE (Course) removed from database scope: " + entityId);
                 break;
             case "enrollment":
-                enrollmentDb.delete(entityId);
+                enrollmentService.deleteEnrollment(entityId);
                 System.out.println("     DELETE (Enrollment) removed from database scope: " + entityId);
                 break;
             default:
@@ -504,37 +494,57 @@ public class Main {
     }
 
     private static void beginTransaction() {
-        studentDb.begin();
-        courseDb.begin();
-        enrollmentDb.begin();
+        studentService.begin();
+        courseService.begin();
+        enrollmentService.begin();
     }
 
     private static void commitTransaction() {
-        studentDb.commit();
-        courseDb.commit();
-        enrollmentDb.commit();
+        studentService.commit();
+        courseService.commit();
+        enrollmentService.commit();
     }
 
     private static void rollbackTransaction() {
-        studentDb.rollback();
-        courseDb.rollback();
-        enrollmentDb.rollback();
+        studentService.rollback();
+        courseService.rollback();
+        enrollmentService.rollback();
     }
 
     private static void rollbackActiveTransactions() {
-        rollbackIfActive(studentDb, "student");
-        rollbackIfActive(courseDb, "course");
-        rollbackIfActive(enrollmentDb, "enrollment");
+        rollbackStudentIfActive();
+        rollbackCourseIfActive();
+        rollbackEnrollmentIfActive();
         System.out.println("State restored successfully.");
     }
 
-    private static void rollbackIfActive(TransactionalStore<?, ?> store, String storeName) {
+    private static void rollbackStudentIfActive() {
         try {
-            if (store.isTxActive()) {
-                store.rollback();
+            if (studentService.isTxActive()) {
+                studentService.rollback();
             }
         } catch (Exception exception) {
-            System.out.println("Recovery fault in " + storeName + " store: " + exception.getMessage());
+            System.out.println("Recovery fault in student store: " + exception.getMessage());
+        }
+    }
+
+    private static void rollbackCourseIfActive() {
+        try {
+            if (courseService.isTxActive()) {
+                courseService.rollback();
+            }
+        } catch (Exception exception) {
+            System.out.println("Recovery fault in course store: " + exception.getMessage());
+        }
+    }
+
+    private static void rollbackEnrollmentIfActive() {
+        try {
+            if (enrollmentService.isTxActive()) {
+                enrollmentService.rollback();
+            }
+        } catch (Exception exception) {
+            System.out.println("Recovery fault in enrollment store: " + exception.getMessage());
         }
     }
 

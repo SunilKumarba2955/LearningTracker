@@ -1,0 +1,11 @@
+services:
+  learntrack:
+    build:
+      context: .
+    image: learntrack:local
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/workspace
+    command: sh scripts/run-learntrack.sh

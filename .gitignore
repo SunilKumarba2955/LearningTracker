@@ -1,0 +1,29 @@
+# Java build output
+bin/
+out/
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs and runtime dumps
+*.log
+hs_err_pid*
+replay_pid*
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# IDE and editor metadata
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# OS metadata
+.DS_Store
+Thumbs.db

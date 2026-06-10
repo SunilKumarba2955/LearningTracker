@@ -5,6 +5,7 @@ LearnTrack is built with Core Java. It does not require Maven, Gradle, or any ex
 ## Installed Prerequisites
 
 - Java Development Kit (JDK) 17 or higher
+- Docker Desktop or Docker Engine with Docker Compose, if using the containerized workflow
 
 ## Verifying Local Installation
 
@@ -41,4 +42,34 @@ After compilation, run the main class with:
 
 ```bash
 java -cp bin com.airtribe.learntrack.Main
+```
+
+## Docker Compose Workflow
+
+The project includes a Docker Compose setup for running LearnTrack inside a JDK 21 container. This keeps local execution consistent without requiring Java to be installed directly on the host machine.
+
+Build and run the application container:
+
+```bash
+docker compose up --build
+```
+
+For the interactive CLI workflow, run the service with an attached terminal:
+
+```bash
+docker compose run --rm learntrack
+```
+
+The container compiles Java files from `src` into `out` and runs:
+
+```bash
+java -cp out com.airtribe.learntrack.Main
+```
+
+At the scaffold stage, there may be no Java source files or no `Main` class yet. In that case, the container exits cleanly with a message explaining what is missing.
+
+To run one-off commands inside the project container:
+
+```bash
+docker compose run --rm learntrack javac -version
 ```

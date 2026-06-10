@@ -1,0 +1,3 @@
+id,studentId,courseId,enrollmentDate,status
+1,1,1,2026-06-10,ACTIVE
+2,2,2,2026-06-10,ACTIVE

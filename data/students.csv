@@ -1,0 +1,3 @@
+id,firstName,lastName,email,batch,active
+1,Asha,Raman,asha.raman@example.com,java-foundations,true
+2,Rohan,Mehta,rohan.mehta@example.com,clean-architecture,true

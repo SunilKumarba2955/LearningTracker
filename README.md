@@ -6,6 +6,9 @@ LearnTrack is a console-based Student and Course Management System built with Co
 
 - Manage students, courses, and enrollments from a terminal menu
 - Add, list, search, update, deactivate, and enroll records in memory
+- Manage trainers, view their courses, batches, and students
+- Track course trainer, batch, fixed capacity, and accepted seat counts
+- Ask for trainer approval when a course batch is already full
 - Store runtime data in service-owned `ArrayList` collections
 - Use `Person` as a base class and `Student` / `Trainer` as child classes
 - Generate IDs with a static `IdGenerator` utility
@@ -33,8 +36,11 @@ LearnTrack is a console-based Student and Course Management System built with Co
       |    Student     |          |    Trainer     |
       +----------------+          +----------------+
       | batch          |          | specialization |
-      | active         |          +----------------+
+      | active         |          | active         |
       +----------------+
+                                      |
+                                      | handles
+                                      v
 
       +----------------+          +----------------+
       |     Course     |          |   Enrollment   |
@@ -43,11 +49,14 @@ LearnTrack is a console-based Student and Course Management System built with Co
       | courseName     |          | studentId      |
       | description    |          | courseId       |
       | durationWeeks  |          | enrollmentDate |
-      | active         |          | status         |
+      | trainerId      |          | status         |
+      | batchName      |          +----------------+
+      | maxCapacity    |
+      | active         |
       +----------------+          +----------------+
 
-      StudentService       CourseService       EnrollmentService
-      ArrayList<Student>   ArrayList<Course>   ArrayList<Enrollment>
+      StudentService       TrainerService       CourseService       EnrollmentService
+      ArrayList<Student>   ArrayList<Trainer>   ArrayList<Course>   ArrayList<Enrollment>
 ```
 
 ## Repository Layout
@@ -110,8 +119,10 @@ data/seed.csv
 It contains:
 
 - 220 students
+- 8 trainers
 - 12 courses
 - 240 enrollments
+- fixed course batch capacity of 60
 - Safe `GET` and `PUT` verification rows
 
 From the main menu, use:

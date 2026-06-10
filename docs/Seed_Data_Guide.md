@@ -11,8 +11,10 @@ data\seed.csv
 Contents:
 
 - 220 students with IDs `1001` through `1220`
+- 8 trainers with IDs `4001` through `4008`
 - 12 courses with IDs `2001` through `2012`
 - 240 enrollments with IDs `3001` through `3240`
+- fixed batch capacity of 60 for every course
 - Safe `GET` and `PUT` verification rows
 
 ## Load Seed Data From the Menu

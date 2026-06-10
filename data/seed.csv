@@ -1,5 +1,5 @@
 ﻿# Large Auto-Injection Seed Configuration
-# 220 students, 12 courses, 240 enrollments, plus safe verification commands
+# 220 students, 8 trainers, 12 courses, 240 enrollments, plus safe verification commands
 POST,student,1001,Aarav,Sharma,aarav.sharma1001@learntrack.example.com,Cohort-A,true
 POST,student,1002,Aditi,Sharma,aditi.sharma1002@learntrack.example.com,Cohort-B,true
 POST,student,1003,Arjun,Sharma,arjun.sharma1003@learntrack.example.com,Cohort-C,true
@@ -220,18 +220,26 @@ POST,student,1217,Nisha,Bose,nisha.bose1217@learntrack.example.com,Cohort-A,true
 POST,student,1218,Rahul,Bose,rahul.bose1218@learntrack.example.com,Cohort-B,true
 POST,student,1219,Tara,Bose,tara.bose1219@learntrack.example.com,Cohort-C,true
 POST,student,1220,Yash,Bose,yash.bose1220@learntrack.example.com,Cohort-D,true
-POST,course,2001,Java Software Design,Clean Architecture and SOLID design,12,true
-POST,course,2002,Advanced Systems Engineering,High performance Java architectures,16,true
-POST,course,2003,Data Structures in Java,Lists maps trees and algorithmic thinking,10,true
-POST,course,2004,CLI Application Engineering,Command interpreters validation and terminal UX,8,true
-POST,course,2005,Distributed Systems,Consistency patterns for in memory services,9,true
-POST,course,2006,CSV Processing Engines,State machine parsing and scripting workflows,6,true
-POST,course,2007,Object Oriented Modeling,Encapsulation inheritance and polymorphism,7,true
-POST,course,2008,Exception Safety Patterns,Custom exceptions and boundary handlers,5,true
-POST,course,2009,Testing and Verification,Manual automated and regression test design,6,true
-POST,course,2010,Performance Fundamentals,Complexity memory layout and throughput,8,true
-POST,course,2011,Clean Code Workshop,Refactoring naming and maintainability,4,true
-POST,course,2012,Capstone Integration Lab,End to end feature integration practice,12,true
+POST,trainer,4001,Nisha,Raman,nisha.raman@learntrack.example.com,Java Architecture,true
+POST,trainer,4002,Vikram,Sethi,vikram.sethi@learntrack.example.com,Systems Engineering,true
+POST,trainer,4003,Meenal,Chopra,meenal.chopra@learntrack.example.com,Data Structures,true
+POST,trainer,4004,Arvind,Menon,arvind.menon@learntrack.example.com,CLI Applications,true
+POST,trainer,4005,Sana,Kapadia,sana.kapadia@learntrack.example.com,Distributed Systems,true
+POST,trainer,4006,Devika,Pillai,devika.pillai@learntrack.example.com,CSV Processing,true
+POST,trainer,4007,Rajiv,Malhotra,rajiv.malhotra@learntrack.example.com,Object Modeling,true
+POST,trainer,4008,Kavita,Singh,kavita.singh@learntrack.example.com,Testing and Quality,true
+POST,course,2001,Java Software Design,Clean Architecture and SOLID design,12,4001,Cohort-A,60,true
+POST,course,2002,Advanced Systems Engineering,High performance Java architectures,16,4002,Cohort-B,60,true
+POST,course,2003,Data Structures in Java,Lists maps trees and algorithmic thinking,10,4003,Cohort-C,60,true
+POST,course,2004,CLI Application Engineering,Command interpreters validation and terminal UX,8,4004,Cohort-D,60,true
+POST,course,2005,Distributed Systems,Consistency patterns for in memory services,9,4005,Cohort-E,60,true
+POST,course,2006,CSV Processing Engines,State machine parsing and scripting workflows,6,4006,Cohort-F,60,true
+POST,course,2007,Object Oriented Modeling,Encapsulation inheritance and polymorphism,7,4007,Cohort-G,60,true
+POST,course,2008,Exception Safety Patterns,Custom exceptions and boundary handlers,5,4008,Cohort-H,60,true
+POST,course,2009,Testing and Verification,Manual automated and regression test design,6,4008,Cohort-A,60,true
+POST,course,2010,Performance Fundamentals,Complexity memory layout and throughput,8,4002,Cohort-B,60,true
+POST,course,2011,Clean Code Workshop,Refactoring naming and maintainability,4,4001,Cohort-C,60,true
+POST,course,2012,Capstone Integration Lab,End to end feature integration practice,12,4005,Cohort-D,60,true
 POST,enrollment,3001,1001,2001,2026-06-01,ACTIVE
 POST,enrollment,3002,1002,2002,2026-06-02,COMPLETED
 POST,enrollment,3003,1003,2003,2026-06-03,CANCELLED
@@ -480,7 +488,7 @@ GET,course,2012
 GET,enrollment,3001
 GET,enrollment,3240
 PUT,student,1001,Aarav,Sharma-Verified,aarav.verified1001@learntrack.example.com,Cohort-A,true
-PUT,course,2001,false
 PUT,enrollment,3001,COMPLETED
+PUT,course,2001,false
 PUT,student,1002,Aditi,Sharma,aditi.sharma1002@learntrack.example.com,Cohort-B,false
 GET,student,1002

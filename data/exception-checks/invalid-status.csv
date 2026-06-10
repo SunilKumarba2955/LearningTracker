@@ -1,4 +1,4 @@
-﻿# Expected: Invalid enrollment status
+# Expected: status must be PENDING, ACTIVE, COMPLETED, CANCELLED, or REJECTED
 POST,student,1902,Invalid,Status,invalid.status1902@learntrack.example.com,Cohort-X,true
 POST,course,2902,Invalid Status Course,Course for invalid status test,4,true
 POST,enrollment,3903,1902,2902,2026-06-10,PAUSED

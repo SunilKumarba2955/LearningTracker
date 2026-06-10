@@ -52,6 +52,22 @@ public class CourseService {
     }
 
     /**
+     * Lists courses handled by a trainer.
+     *
+     * @param trainerId trainer identifier
+     * @return defensive list copy of matching courses
+     */
+    public List<Course> listCoursesByTrainerId(int trainerId) {
+        List<Course> result = new ArrayList<>();
+        for (Course course : courses) {
+            if (course.getTrainerId() == trainerId) {
+                result.add(copyCourse(course));
+            }
+        }
+        return result;
+    }
+
+    /**
      * Updates whether a course is active.
      *
      * @param id course identifier
@@ -107,6 +123,15 @@ public class CourseService {
         if (course.getDurationInWeeks() <= 0) {
             throw new InvalidInputException("Validation error: Course duration must be at least 1 week.");
         }
+        if (course.getTrainerId() < 0) {
+            throw new InvalidInputException("Validation error: Course trainer ID cannot be negative.");
+        }
+        if (isBlank(course.getBatchName())) {
+            throw new InvalidInputException("Validation error: Course batch is required.");
+        }
+        if (course.getMaxCapacity() != 60) {
+            throw new InvalidInputException("Validation error: Course batch capacity must be exactly 60.");
+        }
     }
 
     private boolean isBlank(String value) {
@@ -119,6 +144,9 @@ public class CourseService {
                 course.getCourseName(),
                 course.getDescription(),
                 course.getDurationInWeeks(),
+                course.getTrainerId(),
+                course.getBatchName(),
+                course.getMaxCapacity(),
                 course.isActive()
         );
     }

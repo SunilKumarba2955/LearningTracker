@@ -12,6 +12,7 @@ public final class IdGenerator {
     private static int studentIdCounter = 1000;
     private static int courseIdCounter = 2000;
     private static int enrollmentIdCounter = 3000;
+    private static int trainerIdCounter = 4000;
 
     private IdGenerator() {
         throw new AssertionError("IdGenerator cannot be instantiated");
@@ -48,6 +49,16 @@ public final class IdGenerator {
     }
 
     /**
+     * Returns the next trainer identifier.
+     *
+     * @return next positive trainer identifier
+     */
+    public static synchronized int getNextTrainerId() {
+        trainerIdCounter++;
+        return trainerIdCounter;
+    }
+
+    /**
      * Synchronizes the student counter with an externally known maximum id.
      *
      * @param id externally known non-negative student id
@@ -75,6 +86,16 @@ public final class IdGenerator {
      */
     public static synchronized void syncEnrollmentId(int id) {
         enrollmentIdCounter = syncCounter(enrollmentIdCounter, id, "enrollmentId");
+    }
+
+    /**
+     * Synchronizes the trainer counter with an externally known maximum id.
+     *
+     * @param id externally known non-negative trainer id
+     * @throws IllegalArgumentException if {@code id} is negative
+     */
+    public static synchronized void syncTrainerId(int id) {
+        trainerIdCounter = syncCounter(trainerIdCounter, id, "trainerId");
     }
 
     private static int syncCounter(int currentCounter, int externalId, String fieldName) {

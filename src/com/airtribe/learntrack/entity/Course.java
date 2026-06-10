@@ -10,6 +10,9 @@ public class Course {
     private String courseName;
     private String description;
     private int durationInWeeks;
+    private int trainerId;
+    private String batchName;
+    private int maxCapacity;
     private boolean active;
 
     /**
@@ -19,15 +22,44 @@ public class Course {
      * @param courseName non-blank course name
      * @param description non-null course description
      * @param durationInWeeks positive course duration in weeks
+     * @param trainerId assigned trainer identifier; zero means unassigned
+     * @param batchName non-blank batch code or name
+     * @param maxCapacity maximum accepted students for the batch
      * @param active whether the course is active
      * @throws IllegalArgumentException if any argument violates course invariants
      */
-    public Course(int id, String courseName, String description, int durationInWeeks, boolean active) {
+    public Course(
+            int id,
+            String courseName,
+            String description,
+            int durationInWeeks,
+            int trainerId,
+            String batchName,
+            int maxCapacity,
+            boolean active
+    ) {
         setId(id);
         setCourseName(courseName);
         setDescription(description);
         setDurationInWeeks(durationInWeeks);
+        setTrainerId(trainerId);
+        setBatchName(batchName);
+        setMaxCapacity(maxCapacity);
         setActive(active);
+    }
+
+    /**
+     * Creates a course with default batch capacity and no assigned trainer.
+     *
+     * @param id unique positive course identifier
+     * @param courseName non-blank course name
+     * @param description non-null course description
+     * @param durationInWeeks positive course duration in weeks
+     * @param active whether the course is active
+     * @throws IllegalArgumentException if any argument violates course invariants
+     */
+    public Course(int id, String courseName, String description, int durationInWeeks, boolean active) {
+        this(id, courseName, description, durationInWeeks, 0, "Unassigned", 60, active);
     }
 
     /**
@@ -128,6 +160,69 @@ public class Course {
     }
 
     /**
+     * Returns the assigned trainer identifier.
+     *
+     * @return trainer identifier, or zero when unassigned
+     */
+    public int getTrainerId() {
+        return trainerId;
+    }
+
+    /**
+     * Updates the assigned trainer identifier.
+     *
+     * @param trainerId trainer identifier, or zero when unassigned
+     * @throws IllegalArgumentException if {@code trainerId} is negative
+     */
+    public void setTrainerId(int trainerId) {
+        if (trainerId < 0) {
+            throw new IllegalArgumentException("trainerId must not be negative");
+        }
+        this.trainerId = trainerId;
+    }
+
+    /**
+     * Returns the course batch name.
+     *
+     * @return non-blank batch code or name
+     */
+    public String getBatchName() {
+        return batchName;
+    }
+
+    /**
+     * Updates the course batch name.
+     *
+     * @param batchName non-blank batch code or name
+     * @throws IllegalArgumentException if {@code batchName} is null or blank
+     */
+    public void setBatchName(String batchName) {
+        this.batchName = requireNotBlank(batchName, "batchName");
+    }
+
+    /**
+     * Returns maximum accepted students for the batch.
+     *
+     * @return positive capacity value
+     */
+    public int getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    /**
+     * Updates maximum accepted students for the batch.
+     *
+     * @param maxCapacity positive capacity value
+     * @throws IllegalArgumentException if {@code maxCapacity} is zero or negative
+     */
+    public void setMaxCapacity(int maxCapacity) {
+        if (maxCapacity <= 0) {
+            throw new IllegalArgumentException("maxCapacity must be greater than zero");
+        }
+        this.maxCapacity = maxCapacity;
+    }
+
+    /**
      * Returns whether the course is active.
      *
      * @return {@code true} when the course is active
@@ -157,6 +252,9 @@ public class Course {
                 + ", courseName='" + courseName + '\''
                 + ", description='" + description + '\''
                 + ", durationInWeeks=" + durationInWeeks
+                + ", trainerId=" + trainerId
+                + ", batchName='" + batchName + '\''
+                + ", maxCapacity=" + maxCapacity
                 + ", active=" + active
                 + '}';
     }
@@ -178,9 +276,12 @@ public class Course {
         Course course = (Course) object;
         return id == course.id
                 && durationInWeeks == course.durationInWeeks
+                && trainerId == course.trainerId
+                && maxCapacity == course.maxCapacity
                 && active == course.active
                 && Objects.equals(courseName, course.courseName)
-                && Objects.equals(description, course.description);
+                && Objects.equals(description, course.description)
+                && Objects.equals(batchName, course.batchName);
     }
 
     /**
@@ -190,7 +291,7 @@ public class Course {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(id, courseName, description, durationInWeeks, active);
+        return Objects.hash(id, courseName, description, durationInWeeks, trainerId, batchName, maxCapacity, active);
     }
 
     private static String requireNotBlank(String value, String fieldName) {

@@ -10,6 +10,8 @@ public class Enrollment {
     private static final String STATUS_ACTIVE = "ACTIVE";
     private static final String STATUS_COMPLETED = "COMPLETED";
     private static final String STATUS_CANCELLED = "CANCELLED";
+    private static final String STATUS_PENDING = "PENDING";
+    private static final String STATUS_REJECTED = "REJECTED";
 
     private int id;
     private int studentId;
@@ -24,7 +26,8 @@ public class Enrollment {
      * @param studentId positive student foreign-key identifier
      * @param courseId positive course foreign-key identifier
      * @param enrollmentDate non-blank enrollment date text
-     * @param status enrollment status: {@code ACTIVE}, {@code COMPLETED}, or {@code CANCELLED}
+     * @param status enrollment status: {@code PENDING}, {@code ACTIVE}, {@code COMPLETED},
+     *         {@code CANCELLED}, or {@code REJECTED}
      * @throws IllegalArgumentException if any argument violates enrollment invariants
      */
     public Enrollment(int id, int studentId, int courseId, String enrollmentDate, String status) {
@@ -127,7 +130,8 @@ public class Enrollment {
     /**
      * Returns the enrollment status.
      *
-     * @return status value: {@code ACTIVE}, {@code COMPLETED}, or {@code CANCELLED}
+     * @return status value: {@code PENDING}, {@code ACTIVE}, {@code COMPLETED},
+     *         {@code CANCELLED}, or {@code REJECTED}
      */
     public String getStatus() {
         return status;
@@ -136,13 +140,14 @@ public class Enrollment {
     /**
      * Updates the enrollment status.
      *
-     * @param status status value: {@code ACTIVE}, {@code COMPLETED}, or {@code CANCELLED}
+     * @param status status value: {@code PENDING}, {@code ACTIVE}, {@code COMPLETED},
+     *         {@code CANCELLED}, or {@code REJECTED}
      * @throws IllegalArgumentException if {@code status} is null, blank, or unsupported
      */
     public void setStatus(String status) {
         String normalizedStatus = requireNotBlank(status, "status").toUpperCase(Locale.ROOT);
         if (!isAllowedStatus(normalizedStatus)) {
-            throw new IllegalArgumentException("status must be ACTIVE, COMPLETED, or CANCELLED");
+            throw new IllegalArgumentException("status must be PENDING, ACTIVE, COMPLETED, CANCELLED, or REJECTED");
         }
         this.status = normalizedStatus;
     }
@@ -216,6 +221,8 @@ public class Enrollment {
     private static boolean isAllowedStatus(String status) {
         return STATUS_ACTIVE.equals(status)
                 || STATUS_COMPLETED.equals(status)
-                || STATUS_CANCELLED.equals(status);
+                || STATUS_CANCELLED.equals(status)
+                || STATUS_PENDING.equals(status)
+                || STATUS_REJECTED.equals(status);
     }
 }

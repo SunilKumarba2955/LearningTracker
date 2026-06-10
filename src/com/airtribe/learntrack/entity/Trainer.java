@@ -7,6 +7,7 @@ import java.util.Objects;
  */
 public class Trainer extends Person {
     private String specialization;
+    private boolean active;
 
     /**
      * Creates a trainer with validated identity, contact, and specialization details.
@@ -16,11 +17,27 @@ public class Trainer extends Person {
      * @param lastName non-blank last name
      * @param email non-blank email address containing {@code @}
      * @param specialization non-blank teaching specialization
+     * @param active whether the trainer can be assigned to active courses
+     * @throws IllegalArgumentException if any argument violates the entity invariants
+     */
+    public Trainer(int id, String firstName, String lastName, String email, String specialization, boolean active) {
+        super(id, firstName, lastName, email);
+        setSpecialization(specialization);
+        setActive(active);
+    }
+
+    /**
+     * Creates an active trainer with validated identity, contact, and specialization details.
+     *
+     * @param id unique positive trainer identifier
+     * @param firstName non-blank first name
+     * @param lastName non-blank last name
+     * @param email non-blank email address containing {@code @}
+     * @param specialization non-blank teaching specialization
      * @throws IllegalArgumentException if any argument violates the entity invariants
      */
     public Trainer(int id, String firstName, String lastName, String email, String specialization) {
-        super(id, firstName, lastName, email);
-        setSpecialization(specialization);
+        this(id, firstName, lastName, email, specialization, true);
     }
 
     /**
@@ -40,6 +57,24 @@ public class Trainer extends Person {
      */
     public void setSpecialization(String specialization) {
         this.specialization = requireNotBlank(specialization, "specialization");
+    }
+
+    /**
+     * Returns whether the trainer is active.
+     *
+     * @return {@code true} when trainer can be assigned
+     */
+    public boolean isActive() {
+        return active;
+    }
+
+    /**
+     * Updates the trainer active flag.
+     *
+     * @param active whether trainer can be assigned
+     */
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     /**
@@ -65,6 +100,7 @@ public class Trainer extends Person {
                 + ", lastName='" + getLastName() + '\''
                 + ", email='" + getEmail() + '\''
                 + ", specialization='" + specialization + '\''
+                + ", active=" + active
                 + '}';
     }
 
@@ -83,7 +119,7 @@ public class Trainer extends Person {
             return false;
         }
         Trainer trainer = (Trainer) object;
-        return Objects.equals(specialization, trainer.specialization);
+        return active == trainer.active && Objects.equals(specialization, trainer.specialization);
     }
 
     /**
@@ -93,6 +129,6 @@ public class Trainer extends Person {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), specialization);
+        return Objects.hash(super.hashCode(), specialization, active);
     }
 }

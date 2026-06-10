@@ -1,2 +1,2 @@
-﻿# Expected: Invalid configuration entity: trainer
-POST,trainer,4901,Grace,Hopper,grace.hopper@example.com,Java,true
+# Expected: Invalid configuration entity: alumni
+POST,alumni,4901,Grace,Hopper,grace.hopper@example.com,Java,true

@@ -31,6 +31,7 @@ Native arrays have a fixed size. A student-management system does not know in ad
 `ArrayList` grows dynamically and keeps add, search, update, and list operations simple. LearnTrack uses:
 
 - `ArrayList<Student>` in `StudentService`
+- `ArrayList<Trainer>` in `TrainerService`
 - `ArrayList<Course>` in `CourseService`
 - `ArrayList<Enrollment>` in `EnrollmentService`
 
@@ -42,7 +43,13 @@ Native arrays have a fixed size. A student-management system does not know in ad
 
 `Person` is the base class for people in the system. `Student` and `Trainer` extend `Person`.
 
-`Student` overrides `getDisplayName()` to include student-specific batch information. This demonstrates basic polymorphism because a `Person` reference can call `getDisplayName()` and receive subtype-specific behavior.
+`Student` overrides `getDisplayName()` to include student-specific batch information. `Trainer` overrides it to include trainer specialization. This demonstrates basic polymorphism because a `Person` reference can call `getDisplayName()` and receive subtype-specific behavior.
+
+## Trainer, Batch, and Capacity Rules
+
+Each course has an assigned trainer, a batch name, and a fixed batch capacity of 60 students. The enrollment service counts accepted enrollments for each course. If a course is already full, the CLI asks the trainer to accept or reject the over-capacity enrollment request.
+
+Course deactivation is treated as a business event: related enrollments are changed to `CANCELLED` so student and course views stay consistent.
 
 ## Exception Handling
 
@@ -55,7 +62,7 @@ The CLI catches these known exceptions and prints clean messages so the menu can
 
 ## Seed CSV Trade-Off
 
-The project is in-memory only, as required. `data/seed.csv` is a convenience script for quickly loading enough records for evaluation, not persistent storage. The evaluator can select menu option `4` and load all sample students, courses, and enrollments without typing hundreds of records manually.
+The project is in-memory only, as required. `data/seed.csv` is a convenience script for quickly loading enough records for evaluation, not persistent storage. The evaluator can select menu option `4` and load all sample students, trainers, courses, and enrollments without typing hundreds of records manually.
 
 ## Code Quality Invariants
 
@@ -73,5 +80,6 @@ The project is in-memory only, as required. `data/seed.csv` is a convenience scr
 | In-memory storage | Service-owned `ArrayList` collections | Matches the assignment goal of practicing collection operations directly. |
 | ID creation | Static `IdGenerator` | Demonstrates static members with one shared counter source. |
 | Person model | `Person`, `Student`, `Trainer` | Demonstrates inheritance, `super`, and method overriding. |
+| Capacity rule | Fixed course capacity of 60 | Keeps batch-size validation explicit and easy to verify. |
 | Error handling | Custom exceptions plus CLI catch blocks | Keeps the app running after expected input mistakes. |
 | Output rendering | `ConsolePresenter` | Keeps table formatting out of service logic. |

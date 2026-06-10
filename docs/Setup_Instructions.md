@@ -66,7 +66,7 @@ The container compiles Java files from `src` into `out` and runs:
 java -cp out com.airtribe.learntrack.Main
 ```
 
-At the scaffold stage, there may be no Java source files or no `Main` class yet. In that case, the container exits cleanly with a message explaining what is missing.
+The container compiles Java files from `src`, starts `com.airtribe.learntrack.Main`, and auto-loads `data/seed.csv` when the seed file is present.
 
 To run one-off commands inside the project container:
 
